@@ -1,0 +1,106 @@
+{% extends "base.html"%} {% block title %}Home{% endblock %} {% block content %}
+
+<h1 align="left">NewLands</h1>
+
+<h1 align="center">{% block header %}Posts{% endblock %}</h1>
+<div id="posts">
+  {% for posts in posts %}
+  <div class="card border-dark">
+    <div class="card-header d-flex justify-cotent-between align-items-center">
+      <a href="/posts/{{posts.user.username}}">{{posts.user.username}}</a>
+      {% if user.id == posts.author %}
+      <div class="btn-group" style="padding-left: 1000px">
+        <button
+          type="button"
+          class="btn btn btn-primary dropdown-toggle"
+          data-bs-toggle="dropdown"
+        ></button>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="/delete-post/{{posts.id}}" class="dropdown-item">Delete</a>
+          </li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <div class="card-text">{{posts.text}}</div>
+      <br />
+      <div class="collapse" id="comments-{{posts.id}}">
+        <div class="card">
+          <div class="card-body" id="comments-expanded-{{posts.id}}">
+            {% for comment in posts.comments %}
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span>
+                  <a href="/posts/{{comment.user.username}}">{{comment.user.username}}</a>:
+                  {{ comment.text }}
+                </span>
+              </div>
+              <div class="text-end">
+                <small class="text-muted">{{ comment.date_created }}</small>
+                {% if user.id == comment.author or user.id == posts.author %}
+                <div class="btn-group ms-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                  ></button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a href="/delete-comment/{{comment.id}}" class="dropdown-item">Delete</a>
+                    </li>
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <p class="card-text">
+        {% if posts.comments|length > 0 %}
+        <a
+          data-bs-toggle="collapse"
+          href="#comments-{{posts.id}}"
+          role="button"
+        >
+          <small>View {{posts.comments|length}} Comments</small>
+        </a>
+        {% else %}
+        <small class="text-muted">There are no comments on this post.</small>
+        {% endif %}
+      </p>
+      <form
+        action="/create-comment/{{posts.id}}"
+        class="input-group mb-3"
+        method="POST"
+      >
+        <input
+          type="text"
+          id="text"
+          name="text"
+          class="form-control"
+          placeholder="Come on tell them your toughts!"
+        />
+        <button type="submit" class="btn btn-primary">Comment</button>
+      </form>
+    </div>
+    <div class="card-footer text-mutted">{{posts.date_created}}</div>
+  </div>
+  <br />
+  {% endfor %}
+</div>
+{% block footer %}
+
+<div align="center">
+  <a href="/create-post"
+    ><button type="button" class="btn btn-primary btn-lg">
+      Create a Post
+    </button></a
+  >
+</div>
+
+{% endblock %} {% endblock %}
