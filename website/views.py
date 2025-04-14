@@ -116,3 +116,35 @@ def like(post_id):
         db.session.commit()
 
     return redirect(url_for('views.home'))
+
+@views.route('/follow/<int:user_id>')
+@login_required
+def follow(user_id):
+    user = User.query.get_or_404(user_id)
+    if not current_user.is_following(user):
+        current_user.follow(user)
+        db.session.commit()
+    return redirect(url_for('views.profile', user_id=user.id))
+
+@views.route('/unfollow/<int:user_id>')
+@login_required
+def unfollow(user_id):
+    user = User.query.get_or_404(user_id)
+    if current_user.is_following(user):
+        current_user.unfollow(user)
+        db.session.commit()
+    return redirect(url_for('views.profile', user_id=user.id))
+
+
+@views.route('/profile/<int:user_id>')
+@login_required
+def profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template("profile.html", user=user, current_user=current_user)
+
+
+@views.route('/users')
+@login_required
+def list_users():
+    users = User.query.all()
+    return render_template("user_list.html", users=users)

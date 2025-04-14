@@ -1,0 +1,28 @@
+{% extends "base.html"%}
+{% block title %}{{current_user.username}}'s Profile{% endblock %}
+
+{% block content %}
+ 
+<p>Current user: {{ current_user.username }}</p>
+<p>Profile owner: {{ user.username }}</p>
+
+{% if user != current_user %}
+    <p>This is NOT your profile</p>
+{% else %}
+    <p>This IS your profile</p>
+{% endif %}
+
+<br/>
+
+{# % if user != current_user % #}
+    {% if current_user.is_following(user) %}
+        <a href="{{ url_for('views.unfollow', user_id=user.id) }}" class="btn btn-danger">Unfollow</a>
+    {% else %}
+        <a href="{{ url_for('views.follow', user_id=user.id) }}" class="btn btn-primary">Follow</a>
+    {% endif %}
+{# % endif % #}
+
+<p>Followers: {{ user.followers.count() }}</p>
+<p>Following: {{ user.followed.count() }}</p>
+
+{% endblock %}
