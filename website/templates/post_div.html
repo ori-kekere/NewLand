@@ -8,20 +8,33 @@
   <div class="card border-dark">
     <div class="card-header d-flex justify-cotent-between align-items-center">
       <a href="/posts/{{posts.user.username}}">{{posts.user.username}}</a>
-      {% if user.id == posts.author %}
-      <div class="btn-group" style="padding-left: 1000px">
-        <button
-          type="button"
-          class="btn btn btn-primary dropdown-toggle"
-          data-bs-toggle="dropdown"
-        ></button>
-        <ul class="dropdown-menu">
-          <li>
-            <a href="/delete-post/{{posts.id}}" class="dropdown-item">Delete</a>
-          </li>
-        </ul>
+
+      <div>
+        <div style="padding-left: 950px">
+
+        {{ posts.likes|length }}
+        {% if user.id in posts.likes|map(attribute="author")|list %}
+        <a href="/like-post/{{posts.id}}"><i class="fas fa-thumbs-up"></i></a>
+        {% else %}
+        <a href="/like-post/{{posts.id}}"><i class="far fa-thumbs-up"></i></a>
+        {% endif %}
+
+        </div>
+        {% if user.id == posts.author %}
+        <div class="btn-group" style="padding-left: 1000px">
+          <button
+            type="button"
+            class="btn btn btn-primary dropdown-toggle"
+            data-bs-toggle="dropdown"
+          ></button>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/delete-post/{{posts.id}}" class="dropdown-item">Delete</a>
+            </li>
+          </ul>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
     <div class="card-body">
       <div class="card-text">{{posts.text}}</div>
