@@ -3,26 +3,33 @@
 
 {% block content %}
  
-<p>Current user: {{ current_user.username }}</p>
-<p>Profile owner: {{ user.username }}</p>
+
+<div class="profile-container">
+    <h2>{{ user.username }}</h2>
+    <p><strong>Bio:</strong> {{ user.bio or "No bio yet." }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Followers:</strong> {{ user.followers.count() }}</p>
+    <p><strong>Following:</strong> {{ user.followed.count() }}</p>
+
+    {% if current_user.id == user.id %}
+      <a href="{{ url_for('views.edit_profile') }}" class="btn btn-secondary">Edit Profile</a>
+    {% endif %}
+</div>
+
+  <br/>
 
 {% if user != current_user %}
-    <p>This is NOT your profile</p>
-{% else %}
-    <p>This IS your profile</p>
-{% endif %}
-
-<br/>
-
-{# % if user != current_user % #}
     {% if current_user.is_following(user) %}
         <a href="{{ url_for('views.unfollow', user_id=user.id) }}" class="btn btn-danger">Unfollow</a>
     {% else %}
         <a href="{{ url_for('views.follow', user_id=user.id) }}" class="btn btn-primary">Follow</a>
     {% endif %}
-{# % endif % #}
+{% endif %}
 
-<p>Followers: {{ user.followers.count() }}</p>
-<p>Following: {{ user.followed.count() }}</p>
+<p>
+    <a href="{{ url_for('views.followers', user_id=user.id) }}">Followers ({{ user.followers.count() }})</a> |
+    <a href="{{ url_for('views.following', user_id=user.id) }}">Following ({{ user.followed.count() }})</a>
+  </p>
+  
 
 {% endblock %}

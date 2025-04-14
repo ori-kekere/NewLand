@@ -148,3 +148,38 @@ def profile(user_id):
 def list_users():
     users = User.query.all()
     return render_template("user_list.html", users=users)
+
+@views.route("/followers/<int:user_id>")
+@login_required
+def followers(user_id):
+    user = User.query.get_or_404(user_id)
+    followers = user.followers.all()  # returns list of Follow objects
+    return render_template("followers.html", user=user, followers=followers)
+
+
+@views.route("/following/<int:user_id>")
+@login_required
+def following(user_id):
+    user = User.query.get_or_404(user_id)
+    following = user.followed.all()  # returns list of Follow objects
+    return render_template("following.html", user=user, following=following)
+
+
+@views.route('/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        new_username = request.form.get("username")
+        new_bio = request.form.get("bio")
+
+        if len(new_username) < 2:
+            flash('Username too short.', category='error')
+        else:
+            current_user.username = new_username
+            current_user.bio = new_bio
+            db.session.commit()
+            flash("Profile updated!", category="success")
+            return redirect(url_for("views.profile", user_id=current_user.id))
+
+    return render_template("edit_profile.html", user=current_user)
+

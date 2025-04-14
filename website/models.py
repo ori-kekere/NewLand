@@ -20,6 +20,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(60), unique=True)
     password = db.Column(db.String(100))
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+    bio = db.Column(db.Text, default="")
+    profile_pic = db.Column(db.String(300), default="default.png")
     posts = db.relationship('Post', backref='user', passive_deletes=True)
     comments = db.relationship('Comment', backref='user', passive_deletes=True)
     likes = db.relationship('Like', backref='user', passive_deletes=True)

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ user.username }}'s Followers</h2>
+<ul>
+  {% for follow in followers %}
+    <li>
+      <a href="{{ url_for('views.profile', user_id=follow.follower_user.id) }}">
+        {{ follow.follower_user.username }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+<a href="{{ url_for('views.profile', user_id=user.id) }}">Back to profile</a>
+{% endblock %}
