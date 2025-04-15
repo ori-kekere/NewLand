@@ -8,6 +8,12 @@
   {% for user in users %}
     <li>
       <a href="{{ url_for('views.profile', user_id=user.id) }}">{{ user.username }}</a>
+      <br/>
+      {% if user.profile_image %}
+        <img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" height="150" width="150">
+      {% else %}
+        <img src="{{ url_for('static', filename='/uploads/default.png') }}" height="150" width="150">
+      {% endif %}
     </li>
   {% endfor %}
 </ul>

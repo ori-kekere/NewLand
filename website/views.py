@@ -2,6 +2,9 @@ from flask import Blueprint,render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from .models import Post, User, Comment, Like
 from . import db
+from werkzeug.utils import secure_filename
+import os
+import uuid
 
 views = Blueprint("views", __name__)
 
@@ -147,7 +150,8 @@ def profile(user_id):
 @login_required
 def list_users():
     users = User.query.all()
-    return render_template("user_list.html", users=users)
+    return render_template("user_list.html", users=users, user=current_user)
+
 
 @views.route("/followers/<int:user_id>")
 @login_required
@@ -168,18 +172,40 @@ def following(user_id):
 @views.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    if request.method == 'POST':
-        new_username = request.form.get("username")
-        new_bio = request.form.get("bio")
+    UPLOAD_FOLDER = os.path.join('website', 'static', 'uploads')
 
-        if len(new_username) < 2:
-            flash('Username too short.', category='error')
+    if request.method == 'POST':
+        username = request.form.get("username")
+        bio = request.form.get("bio")
+
+        if len(username) < 2:
+            flash('Username is too short!', category='error')
         else:
-            current_user.username = new_username
-            current_user.bio = new_bio
+            # Handle profile picture upload
+            f = request.files.get('file')
+            if f and f.filename != '':
+                # Delete the old profile picture if it exists
+                if current_user.profile_image:
+                    old_path = os.path.join(UPLOAD_FOLDER, current_user.profile_image)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+
+                # Generate unique filename
+                ext = os.path.splitext(f.filename)[1]  # Gets file extension
+                unique_filename = f"{uuid.uuid4().hex}{ext}"
+                save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                f.save(save_path)
+
+                # Update profile image field
+                current_user.profile_image = unique_filename
+
+            # Update other fields
+            current_user.username = username
+            current_user.bio = bio
             db.session.commit()
-            flash("Profile updated!", category="success")
-            return redirect(url_for("views.profile", user_id=current_user.id))
+            flash('Profile updated!', category='success')
+            return redirect(url_for('views.profile', user_id=current_user.id))
 
     return render_template("edit_profile.html", user=current_user)
 

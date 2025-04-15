@@ -5,6 +5,8 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
+import uuid
+
 
 auth = Blueprint("auth", __name__)
 
@@ -30,8 +32,7 @@ def login():
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
-
-    UPLOAD_FOLDER = os.path.join('website', 'static')
+    UPLOAD_FOLDER = os.path.join('website', 'static', 'uploads')
 
     if request.method == 'POST':
         email = request.form.get("email")
@@ -55,15 +56,16 @@ def signup():
         elif len(email) < 5:
             flash('Email is invalid!', category='error')
         else:
-            f = request.files.get('file')  # use get() to avoid key error
+            f = request.files.get('file')  # profile picture
             filename = None
             if f and f.filename != '':
-                filename = secure_filename(f.filename)
-                save_path = os.path.join(UPLOAD_FOLDER, filename)
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)  # create directory if it doesn't exist
+                ext = os.path.splitext(f.filename)[1]
+                unique_filename = f"{uuid.uuid4().hex}{ext}"
+                save_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 f.save(save_path)
+                filename = unique_filename
 
-            # Create user with optional profile image
             new_user = User(
                 email=email,
                 username=username,
