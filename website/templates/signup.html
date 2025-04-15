@@ -1,8 +1,14 @@
 {% extends "base.html"%} {% block title %}Sign Up{% endblock %} {% block content
     %}
-    <form method="POST">
+    <form action="/signup" method="POST" enctype="multipart/form-data">
       <h3 align="center">Sign Up</h3>
       <div class="form-group">
+        
+        <label for="profile">Profile</label>
+        <input type="file"  name="file"/>
+
+        <br/>
+
         <label for="username">Username</label>
         <input
           type="text"

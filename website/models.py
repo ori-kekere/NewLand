@@ -25,6 +25,7 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', backref='user', passive_deletes=True)
     comments = db.relationship('Comment', backref='user', passive_deletes=True)
     likes = db.relationship('Like', backref='user', passive_deletes=True)
+    profile_image = db.Column(db.String(150), nullable=True, default=None)
 
     followed = db.relationship(
         'Follow',

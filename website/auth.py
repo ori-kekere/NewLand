@@ -3,6 +3,8 @@ from . import db
 from .models import User
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import os
 
 auth = Blueprint("auth", __name__)
 
@@ -26,8 +28,11 @@ def login():
 
     return render_template("login.html", user=current_user)
 
-@auth.route('/signup', methods=['GET','POST'])
+@auth.route('/signup', methods=['GET', 'POST'])
 def signup():
+
+    UPLOAD_FOLDER = os.path.join('website', 'static')
+
     if request.method == 'POST':
         email = request.form.get("email")
         username = request.form.get("username")
@@ -42,7 +47,7 @@ def signup():
         elif username_exists:
             flash('That Username already exists!', category='error')
         elif password1 != password2:
-            flash('Sorry, Passwords don/t match.', category='error')
+            flash('Sorry, Passwords don’t match.', category='error')
         elif len(username) < 2:
             flash('That Username is too small!', category='error')
         elif len(password1) < 6:
@@ -50,7 +55,21 @@ def signup():
         elif len(email) < 5:
             flash('Email is invalid!', category='error')
         else:
-            new_user = User(email=email, username=username, password=generate_password_hash(password1, method='pbkdf2:sha256'))
+            f = request.files.get('file')  # use get() to avoid key error
+            filename = None
+            if f and f.filename != '':
+                filename = secure_filename(f.filename)
+                save_path = os.path.join(UPLOAD_FOLDER, filename)
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)  # create directory if it doesn't exist
+                f.save(save_path)
+
+            # Create user with optional profile image
+            new_user = User(
+                email=email,
+                username=username,
+                password=generate_password_hash(password1, method='pbkdf2:sha256'),
+                profile_image=filename
+            )
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
@@ -58,6 +77,8 @@ def signup():
             return redirect(url_for('views.home'))
 
     return render_template("signup.html", user=current_user)
+
+
 
 @auth.route('/logout')
 @login_required
