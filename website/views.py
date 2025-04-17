@@ -1,12 +1,20 @@
 from flask import Blueprint,render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Post, User, Comment, Like
+from .models import Post, User, Comment, Like, Art, ArtComment
 from . import db
 from werkzeug.utils import secure_filename
 import os
 import uuid
 
 views = Blueprint("views", __name__)
+
+UPLOAD_FOLDER = os.path.join('website', 'static', 'art')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @views.route('/')
 @views.route('/home')
@@ -129,12 +137,13 @@ def unfollow(user_id):
     return redirect(url_for('views.profile', user_id=user.id))
 
 
-@views.route("/profile/<int:id>")
-@login_required
-def profile(id):
-    user = User.query.get_or_404(id)
-    posts = Post.query.filter_by(author=id).order_by(Post.date_created.desc()).all()
-    return render_template("profile.html", user=user, posts=posts)
+@views.route("/profile/<int:user_id>")
+def profile(user_id):
+    user = User.query.get_or_404(user_id)
+    posts = Post.query.filter_by(author=user.id).order_by(Post.date_created.desc()).all()
+    artworks = Art.query.filter_by(author=user.id).all()
+    return render_template("profile.html", user=user, posts=posts, arts=artworks)
+
 
 
 
@@ -201,3 +210,54 @@ def edit_profile():
 
     return render_template("edit_profile.html", user=current_user)
 
+
+@views.route('/art', methods=['GET', 'POST'])
+@login_required
+def art():
+    if request.method == 'POST':
+        file = request.files['file']
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+
+            new_art = Art(art=filename, author=current_user.id)
+            db.session.add(new_art)
+            db.session.commit()
+            flash('Art posted!', category='success')
+            return redirect(url_for('views.art'))
+
+        flash('Invalid file type.', category='error')
+
+    arts = Art.query.order_by(Art.date_created.desc()).all()
+    return render_template("art.html", user=current_user, arts=arts)
+
+
+@views.route("/comment-art/<int:art_id>", methods=["POST"])
+@login_required
+def comment_art(art_id):
+    text = request.form.get("text")
+    if not text.strip():
+        flash("Comment cannot be empty.", category="error")
+        return redirect(url_for("art"))
+
+    comment = ArtComment(text=text, author=current_user.id, art_id=art_id)
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for("views.art"))
+
+@views.route("/delete-art-comment/<int:comment_id>")
+@login_required
+def delete_art_comment(comment_id):
+    comment = ArtComment.query.get_or_404(comment_id)
+
+    # Only the comment author or the art author can delete
+    if comment.author != current_user.id and comment.art.author != current_user.id:
+        flash("You don't have permission to delete this comment.", category="error")
+        return redirect(url_for("art"))
+
+    db.session.delete(comment)
+    db.session.commit()
+    flash("Comment deleted.", category="success")
+    return redirect(url_for("views.art"))

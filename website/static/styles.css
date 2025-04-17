@@ -1,10 +1,9 @@
-body {
-    background-image: url('home.png');
+.card-text {
+    color: #FFF;
 }
-
-
 a {
-    color: aliceblue;
+    color: rgb(135, 195, 247);
+    font-weight: bold;
 }
 
 .newlands {
@@ -20,5 +19,17 @@ a {
 }
 .banner-2{
     background-color: rgba(81, 81, 188, 0.79);
-    width: 85%;
+    width: 90%;
+}
+
+.space {
+    padding-top: 30px;
+}
+
+.comment {
+    background: linear-gradient(90deg, rgb(13, 108, 185), rgb(7, 25, 127));
+}
+
+.text-muted {
+    color: #fff !important;
 }

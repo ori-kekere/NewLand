@@ -40,84 +40,109 @@
 
 <hr/>
 
-<div class="user-posts">
-    <h3>Posts by {{ user.username }}</h3>
-  
+<div class="user-work">
+  <h3>Posts and Art by {{ user.username }}</h3>
+
+  {% if posts %}
     {% for post in posts %}
-    <div class="card border-dark banner-1">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
-  
-        <div>
-          {{ post.likes|length }}
-          {% if user.id in post.likes|map(attribute="author")|list %}
-            <a href="/like-post/{{ post.id }}"><i class="fas fa-thumbs-up"></i></a>
-          {% else %}
-            <a href="/like-post/{{ post.id }}"><i class="far fa-thumbs-up"></i></a>
-          {% endif %}
-        </div>
-      </div>
-  
-      <div class="card-body">
-        <p class="card-text">{{ post.text }}</p>
-  
-        <div class="collapse" id="comments-{{ post.id }}">
-          <div class="card">
-            <div class="card-body" id="comments-expanded-{{ post.id }}">
-              {% for comment in post.comments %}
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>: {{ comment.text }}
-                  </div>
-                  <div class="text-end">
-                    <small class="text-muted">{{ comment.date_created }}</small>
-                    {% if user.id == comment.author or user.id == post.author %}
-                    <div class="btn-group ms-2">
-                      <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
-                      <ul class="dropdown-menu">
-                        <li><a href="/delete-comment/{{ comment.id }}" class="dropdown-item">Delete</a></li>
-                      </ul>
-                    </div>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor %}
+    <div class="row mb-4 space">
+      <!-- Post Column -->
+      <div class="col-md-8">
+        <div class="card border-dark banner-1">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
+            <div>
+              {{ post.likes|length }}
+              {% if user.id in post.likes|map(attribute="author")|list %}
+                <a href="/like-post/{{ post.id }}"><i class="fas fa-thumbs-up"></i></a>
+              {% else %}
+                <a href="/like-post/{{ post.id }}"><i class="far fa-thumbs-up"></i></a>
+              {% endif %}
             </div>
           </div>
-        </div>
-  
-        <p class="card-text">
-          {% if post.comments|length > 0 %}
-          <a data-bs-toggle="collapse" href="#comments-{{ post.id }}" role="button">
-            <small>View {{ post.comments|length }} Comments</small>
-          </a>
-          {% else %}
-          <small class="text-muted">There are no comments on this post.</small>
-          {% endif %}
-        </p>
-  
-        <form action="/create-comment/{{ post.id }}" method="POST" class="input-group mb-3">
-          <input type="text" name="text" class="form-control" placeholder="Say something..." />
-          <button type="submit" class="btn btn-primary">Comment</button>
-        </form>
-      </div>
-  
-      <div class="card-footer text-muted">{{ post.date_created.strftime('%B %d, %Y') }}</div>
-    </div>
-    <br />
-    {% else %}
-      <p>No posts yet.</p>
-    {% endfor %}
-    <div>
-      <a href="/create-post"
-        ><button type="button" class="btn btn-primary btn-lg">
-          Create a Post
-        </button></a
-      >
-  </div>
-  </div>
-  
 
+          <div class="card-body">
+            <p class="card-text">{{ post.text }}</p>
+
+            <!-- Comments -->
+            <div class="collapse" id="comments-{{ post.id }}">
+              <div class="card">
+                <div class="card-body comment" id="comments-expanded-{{ post.id }}">
+                  {% for comment in post.comments %}
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>: {{ comment.text }}
+                    </div>
+                    <div class="text-end">
+                      <small class="text-muted">{{ comment.date_created }}</small>
+                      {% if user.id == comment.author or user.id == post.author %}
+                      <div class="btn-group ms-2">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                        <ul class="dropdown-menu">
+                          <li><a href="/delete-comment/{{ comment.id }}" class="dropdown-item">Delete</a></li>
+                        </ul>
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Comment Toggle + Form -->
+             <div>
+              <p class="card-text">
+                {% if post.comments|length > 0 %}
+                <a data-bs-toggle="collapse" href="#comments-{{ post.id }}" role="button">
+                  <small>View {{ post.comments|length }} Comments</small>
+                </a>
+                {% else %}
+                <small class="text-muted">There are no comments on this post.</small>
+                {% endif %}
+              </p>
+            </div>
+
+            <form action="/create-comment/{{ post.id }}" method="POST" class="input-group mb-3">
+              <input type="text" name="text" class="form-control" placeholder="Say something..." />
+              <button type="submit" class="btn btn-primary">Comment</button>
+            </form>
+          </div>
+
+          <div class="card-footer text-muted">{{ post.date_created.strftime('%B %d, %Y') }}</div>
+        </div>
+      </div>
+      
+    {% endfor %}
+  {% else %}
+    <p>No posts yet.</p>
+  {% endif %}
+    
+  <!-- Create Post Button -->
+  <div class="space">
+    <a href="/create-post">
+      <button type="button" class="btn btn-primary btn-lg">Create a Post</button>
+    </a>
+  </div>
+</div>
+<br/>
+<hr>
+  <!-- Art Column -->
+  <div class="col-md-4">
+    {% if arts %}
+      {% for piece in arts %}
+        <div class="card mb-3" style="background-color: rgba(81, 81, 188, 0.79);">
+          <img src="{{ url_for('static', filename='art/' + piece.art) }}" class="card-img-top" alt="Art">
+            <div class="card-body">
+              <p class="card-text">Posted on {{ piece.date_created.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">{{ user.username }} hasn't posted any art yet.</p>
+    {% endif %}
+        </div>
+</div>
 
 {% endblock %}
 

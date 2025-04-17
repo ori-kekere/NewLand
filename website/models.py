@@ -77,3 +77,23 @@ class Like(db.Model):
     date_created = db.Column(db.DateTime(timezone=True), default=func.now())
     author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete="CASCADE"), nullable=False)
+
+class Art(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    art = db.Column(db.String(150), nullable=True, default=None)
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+    user = db.relationship('User', backref='arts')
+
+
+class ArtComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(225), nullable=False)
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    art_id = db.Column(db.Integer, db.ForeignKey('art.id', ondelete="CASCADE"), nullable=False)
+
+    user = db.relationship('User', backref='art_comments')
+    art = db.relationship('Art', backref='comments')
+
