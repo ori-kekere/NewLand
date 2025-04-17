@@ -9,6 +9,7 @@
       integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
       crossorigin="anonymous"
     />
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
     <script
      src="https://kit.fontawesome.com/780a2cab32.js" crossorigin="anonymous">
     </script>
@@ -26,7 +27,9 @@
         ><span class="navbar-toggler-icon"></span></button>
         <div class="collaspe navbar-collaspe" id="navbar">
             <div class="navbar-nav">
-                <a class="nav-item nav-link" href="/home">Home</a>
+              
+              <a class="nav-item nav-link" href="/home"><h3 class="newlands">NewLands</h3></a>
+
                 {% if current_user.is_authenticated %}
                   <a class="nav-item nav-link" href="/users">People</a>
                   <a class="nav-item nav-link" href="/logout">Logout</a>

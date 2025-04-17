@@ -1,6 +1,5 @@
 {% extends "base.html"%} {% block title %}Home{% endblock %} {% block content %}
 
-<h1 align="left">NewLands</h1>
 
 <h1 align="center">{% block header %}Posts{% endblock %}</h1>
 
@@ -8,9 +7,9 @@
 
 <div id="posts">
   {% for posts in posts %}
-  <div class="card border-dark">
+  <div class="card border-dark banner-2">
     <div class="card-header d-flex justify-cotent-between align-items-center">
-      <a href="/posts/{{posts.user.username}}">{{posts.user.username}}</a>
+      <a href="/profile/{{ posts.user.id }}">{{ posts.user.username }}</a>
 
       <div>
         <div style="padding-left: 950px">
@@ -104,7 +103,7 @@
         <button type="submit" class="btn btn-primary">Comment</button>
       </form>
     </div>
-    <div class="card-footer text-mutted">{{posts.date_created}}</div>
+    <div class="card-footer text-muted">{{ posts.date_created.strftime('%B %d, %Y') }}</div>
   </div>
   <br />
   {% endfor %}

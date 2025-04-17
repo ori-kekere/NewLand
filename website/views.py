@@ -42,7 +42,7 @@ def delete_post(id):
 
     if not post:
         flash('Post does not exist!', category='error')
-    elif current_user.id != post.author:  # FIXED LINE
+    elif current_user.id != post.author:  
         flash('You do not have permission to delete this post!', category='error')
     else:
         db.session.delete(post)
@@ -51,17 +51,7 @@ def delete_post(id):
         
     return redirect(url_for('views.home'))
 
-@views.route("/posts/<username>")
-@login_required
-def posts(username):
-    user = User.query.filter_by(username=username).first()
 
-    if not user:
-        flash('That user does not exist!', category='error')
-        return redirect(url_for('views.home'))
-
-    posts = user.posts
-    return render_template("posts.html", user=current_user, posts=posts, username=username)
 
 @views.route("/create-comment/<post_id>", methods=["POST"])
 @login_required
@@ -139,11 +129,13 @@ def unfollow(user_id):
     return redirect(url_for('views.profile', user_id=user.id))
 
 
-@views.route('/profile/<int:user_id>')
+@views.route("/profile/<int:id>")
 @login_required
-def profile(user_id):
-    user = User.query.get_or_404(user_id)
-    return render_template("profile.html", user=user, current_user=current_user)
+def profile(id):
+    user = User.query.get_or_404(id)
+    posts = Post.query.filter_by(author=id).order_by(Post.date_created.desc()).all()
+    return render_template("profile.html", user=user, posts=posts)
+
 
 
 @views.route('/users')
