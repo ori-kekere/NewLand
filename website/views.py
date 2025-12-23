@@ -1,6 +1,6 @@
 from flask import Blueprint,render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Post, User, Comment, Like, Art, ArtComment
+from .models import Post, User, Comment, Like, Art, ArtComment, Video
 from . import db
 from werkzeug.utils import secure_filename
 import os
@@ -15,6 +15,12 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+VIDEO_UPLOAD_FOLDER = os.path.join('website', 'static', 'videos')
+ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'webm', 'mov'}
+
+def allowed_video(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
 
 @views.route('/')
 @views.route('/home')
@@ -261,3 +267,38 @@ def delete_art_comment(comment_id):
     db.session.commit()
     flash("Comment deleted.", category="success")
     return redirect(url_for("views.art"))
+
+@views.route('/videos', methods=['GET', 'POST'])
+@login_required
+def videos():
+    if request.method == 'POST':
+        file = request.files.get('file')
+
+        if not file or file.filename == '':
+            flash('No video selected.', category='error')
+            return redirect(url_for('views.videos'))
+
+        if not allowed_video(file.filename):
+            flash('Invalid video format.', category='error')
+            return redirect(url_for('views.videos'))
+
+        # Ensure folder exists
+        os.makedirs(VIDEO_UPLOAD_FOLDER, exist_ok=True)
+
+        # Unique filename
+        ext = os.path.splitext(file.filename)[1]
+        filename = f"{uuid.uuid4().hex}{ext}"
+
+        filepath = os.path.join(VIDEO_UPLOAD_FOLDER, filename)
+        file.save(filepath)
+
+        new_video = Video(video=filename, author=current_user.id)
+        db.session.add(new_video)
+        db.session.commit()
+
+        flash('Video uploaded!', category='success')
+        return redirect(url_for('views.videos'))
+
+    videos = Video.query.order_by(Video.date_created.desc()).all()
+    return render_template("videos.html", user=current_user, videos=videos)
+

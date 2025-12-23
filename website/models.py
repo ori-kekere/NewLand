@@ -97,3 +97,11 @@ class ArtComment(db.Model):
     user = db.relationship('User', backref='art_comments')
     art = db.relationship('Art', backref='comments')
 
+class Video(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    video = db.Column(db.String(200), nullable=False)
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+    user = db.relationship('User', backref='videos')
+

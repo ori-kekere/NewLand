@@ -33,7 +33,10 @@
                 {% if current_user.is_authenticated %}
                   <a class="nav-item nav-link" href="/users">People</a>
                   <a class="nav-item nav-link" href="/art">People's Art Work!</a>
+                  <a class="nav-item nav-link" href="/videos">Videos</a>
                   <a class="nav-item nav-link" href="/logout">Logout</a>
+                  
+
                   {% if user.profile_image %}
                   <div style="padding-left: 1300px;">
                     <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" height="50" width="50"></a>
