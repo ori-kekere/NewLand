@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %} Gallery {% endblock %}
+{% block content %}
+
+<h3 align="center">Gallery</h3>
+
+<div class="row">
+
+    <!-- ART CARDS -->
+    {% for piece in arts %}
+    <div class="col-md-4 my-3">
+        <div class="card" style="background-color: rgba(81, 81, 188, 0.79); width: 90%;">
+            <img
+                src="{{ url_for('static', filename='art/' + piece.art) }}"
+                class="card-img-top"
+                alt="Art"
+            >
+
+            <div class="card-body">
+                <p class="card-text">
+                    Posted by
+                    <a href="/profile/{{ piece.user.id }}">
+                        {{ piece.user.username }}
+                    </a><br>
+                    on {{ piece.date_created.strftime('%Y-%m-%d') }}
+                </p>
+
+                <!-- COMMENTS (unchanged) -->
+                {% if piece.comments %}
+                <div class="card mt-2">
+                    <div class="card-body">
+                        {% for comment in piece.comments %}
+                            <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+
+                            {% if comment.author == current_user.id or piece.author == current_user.id %}
+                            <a href="/delete-art-comment/{{ comment.id }}"
+                               class="btn btn-danger btn-sm">
+                                Delete
+                            </a>
+                            {% endif %}
+                            <hr>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                    <p class="text-muted">No comments yet.</p>
+                {% endif %}
+
+                <form
+                    action="{{ url_for('views.comment_art', art_id=piece.id) }}"
+                    method="POST"
+                    class="mt-2"
+                >
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            name="text"
+                            class="form-control"
+                            placeholder="Write a comment..."
+                        >
+                        <button class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- VIDEO CARDS -->
+    {% for video in videos %}
+    <div class="col-md-4 my-3">
+        <div class="card" style="background-color: rgba(81, 81, 188, 0.79); width: 90%;">
+            <video class="card-img-top" controls>
+                <source
+                    src="{{ url_for('static', filename='videos/' + video.video) }}"
+                    type="video/mp4"
+                >
+            </video>
+
+            <div class="card-body">
+                <p class="card-text">
+                    Posted by
+                    <a href="/profile/{{ video.user.id }}">
+                        {{ video.user.username }}
+                    </a><br>
+                    on {{ video.date_created.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<hr>
+
+<!-- UPLOAD SECTION -->
+<h3 align="center">Post</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group text-center">
+
+        <input type="file" name="file" required>
+
+        <br><br>
+
+        <button
+            name="type"
+            value="art"
+            class="btn btn-primary mx-2"
+        >
+            Upload Art
+        </button>
+
+        <button
+            name="type"
+            value="video"
+            class="btn btn-secondary mx-2"
+        >
+            Upload Video
+        </button>
+
+    </div>
+</form>
+
+{% endblock %}

@@ -147,8 +147,13 @@ def unfollow(user_id):
 def profile(user_id):
     user = User.query.get_or_404(user_id)
     posts = Post.query.filter_by(author=user.id).order_by(Post.date_created.desc()).all()
-    artworks = Art.query.filter_by(author=user.id).all()
-    return render_template("profile.html", user=user, posts=posts, arts=artworks)
+    arts = Art.query.filter_by(author=user.id)\
+        .order_by(Art.date_created.desc()).all()
+
+    videos = Video.query.filter_by(author=user.id)\
+        .order_by(Video.date_created.desc()).all()
+
+    return render_template("profile.html", user=user, posts=posts, arts=arts, videos=videos)
 
 
 
@@ -220,24 +225,8 @@ def edit_profile():
 @views.route('/art', methods=['GET', 'POST'])
 @login_required
 def art():
-    if request.method == 'POST':
-        file = request.files['file']
+    return redirect(url_for('views.gallery'))
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
-
-            new_art = Art(art=filename, author=current_user.id)
-            db.session.add(new_art)
-            db.session.commit()
-            flash('Art posted!', category='success')
-            return redirect(url_for('views.art'))
-
-        flash('Invalid file type.', category='error')
-
-    arts = Art.query.order_by(Art.date_created.desc()).all()
-    return render_template("art.html", user=current_user, arts=arts)
 
 
 @views.route("/comment-art/<int:art_id>", methods=["POST"])
@@ -271,34 +260,58 @@ def delete_art_comment(comment_id):
 @views.route('/videos', methods=['GET', 'POST'])
 @login_required
 def videos():
+    return redirect(url_for('views.gallery'))
+
+
+@views.route('/gallery', methods=['GET', 'POST'])
+@login_required
+def gallery():
+    # Handle uploads
     if request.method == 'POST':
         file = request.files.get('file')
+        upload_type = request.form.get('type')  # "art" or "video"
 
         if not file or file.filename == '':
-            flash('No video selected.', category='error')
-            return redirect(url_for('views.videos'))
+            flash('No file selected.', category='error')
+            return redirect(url_for('views.gallery'))
 
-        if not allowed_video(file.filename):
-            flash('Invalid video format.', category='error')
-            return redirect(url_for('views.videos'))
+        # ART upload
+        if upload_type == 'art' and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
 
-        # Ensure folder exists
-        os.makedirs(VIDEO_UPLOAD_FOLDER, exist_ok=True)
+            new_art = Art(art=filename, author=current_user.id)
+            db.session.add(new_art)
+            db.session.commit()
+            flash('Art posted!', category='success')
 
-        # Unique filename
-        ext = os.path.splitext(file.filename)[1]
-        filename = f"{uuid.uuid4().hex}{ext}"
+        # VIDEO upload
+        elif upload_type == 'video' and allowed_video(file.filename):
+            os.makedirs(VIDEO_UPLOAD_FOLDER, exist_ok=True)
 
-        filepath = os.path.join(VIDEO_UPLOAD_FOLDER, filename)
-        file.save(filepath)
+            ext = os.path.splitext(file.filename)[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+            filepath = os.path.join(VIDEO_UPLOAD_FOLDER, filename)
+            file.save(filepath)
 
-        new_video = Video(video=filename, author=current_user.id)
-        db.session.add(new_video)
-        db.session.commit()
+            new_video = Video(video=filename, author=current_user.id)
+            db.session.add(new_video)
+            db.session.commit()
+            flash('Video uploaded!', category='success')
 
-        flash('Video uploaded!', category='success')
-        return redirect(url_for('views.videos'))
+        else:
+            flash('Invalid file type.', category='error')
 
+        return redirect(url_for('views.gallery'))
+
+    # Fetch both
+    arts = Art.query.order_by(Art.date_created.desc()).all()
     videos = Video.query.order_by(Video.date_created.desc()).all()
-    return render_template("videos.html", user=current_user, videos=videos)
 
+    return render_template(
+        "gallery.html",
+        user=current_user,
+        arts=arts,
+        videos=videos
+    )

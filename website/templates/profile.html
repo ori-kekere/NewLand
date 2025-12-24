@@ -41,7 +41,7 @@
 <hr/>
 
 <div class="user-work">
-  <h3>Posts and Art by {{ user.username }}</h3>
+  <h3>Posts, Art and Videos by {{ user.username }}</h3>
 
   {% if posts %}
     {% for post in posts %}
@@ -141,7 +141,31 @@
     {% else %}
       <p class="text-muted">{{ user.username }} hasn't posted any art yet.</p>
     {% endif %}
+  </div>
+
+
+  <!-- VIDEO POSTS -->
+    {% for video in videos %}
+    <div class="col-md-4 my-3">
+        <div class="card" style="background-color: rgba(81, 81, 188, 0.79); width: 90%;">
+            <video class="card-img-top" controls>
+                <source
+                    src="{{ url_for('static', filename='videos/' + video.video) }}"
+                    type="video/mp4"
+                >
+            </video>
+            <div class="card-body">
+                <p class="card-text">
+                    Posted on {{ video.date_created.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
         </div>
+    </div>
+    {% endfor %}
+    {% if not videos %}
+      <p class="text-muted text-center">No posts yet.</p>
+    {% endif %}
+
 </div>
 
 {% endblock %}
