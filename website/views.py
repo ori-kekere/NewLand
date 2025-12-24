@@ -1,6 +1,6 @@
 from flask import Blueprint,render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Post, User, Comment, Like, Art, ArtComment, Video
+from .models import Post, User, Comment, Like, Art, ArtComment, Video, VideoComment
 from . import db
 from werkzeug.utils import secure_filename
 import os
@@ -315,3 +315,36 @@ def gallery():
         arts=arts,
         videos=videos
     )
+
+@views.route('/comment-video/<int:video_id>', methods=['POST'])
+@login_required
+def comment_video(video_id):
+    text = request.form.get('text')
+    video = Video.query.get_or_404(video_id)
+
+    if not text:
+        flash('Comment cannot be empty.', category='error')
+    else:
+        comment = VideoComment(
+            text=text,
+            author=current_user.id,
+            video_id=video.id
+        )
+        db.session.add(comment)
+        db.session.commit()
+
+    return redirect(request.referrer)
+
+@views.route('/delete-video-comment/<int:comment_id>')
+@login_required
+def delete_video_comment(comment_id):
+    comment = VideoComment.query.get_or_404(comment_id)
+
+    if comment.author != current_user.id and comment.video.author != current_user.id:
+        abort(403)
+
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Comment deleted.', category='success')
+
+    return redirect(request.referrer)

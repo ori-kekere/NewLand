@@ -1,6 +1,7 @@
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+from datetime import datetime
 
 
 followers = db.Table('followers',
@@ -99,9 +100,26 @@ class ArtComment(db.Model):
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    video = db.Column(db.String(200), nullable=False)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    video = db.Column(db.String(150), nullable=False)
+    date_created = db.Column(db.DateTime, default=func.utcnow)
+    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    user = db.relationship('User', backref='videos')
+    comments = db.relationship(
+        'VideoComment',
+        backref='video',
+        cascade='all, delete-orphan'
+    )
+
+    user = db.relationship('User')
+
+class VideoComment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(500), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
+
+    user = db.relationship('User')
+
 

@@ -67,31 +67,77 @@
     </div>
     {% endfor %}
 
-    <!-- VIDEO CARDS -->
-    {% for video in videos %}
-    <div class="col-md-4 my-3">
-        <div class="card" style="background-color: rgba(81, 81, 188, 0.79); width: 90%;">
-            <video class="card-img-top" controls>
-                <source
-                    src="{{ url_for('static', filename='videos/' + video.video) }}"
-                    type="video/mp4"
-                >
-            </video>
 
-            <div class="card-body">
-                <p class="card-text">
-                    Posted by
-                    <a href="/profile/{{ video.user.id }}">
-                        {{ video.user.username }}
-                    </a><br>
-                    on {{ video.date_created.strftime('%Y-%m-%d') }}
-                </p>
+
+
+
+<!-- VIDEOS -->
+{% for video in videos %}
+<div class="col-md-4 my-3">
+    <div class="card" style="background-color: rgba(81, 81, 188, 0.79); width: 90%;">
+
+        <video class="card-img-top" controls>
+            <source
+                src="{{ url_for('static', filename='videos/' + video.video) }}"
+                type="video/mp4"
+            >
+        </video>
+
+        <div class="card-body">
+            <p class="card-text">
+                Posted by
+                <a href="/profile/{{ video.user.id }}">
+                    {{ video.user.username }}
+                </a><br>
+                on {{ video.date_created.strftime('%Y-%m-%d') }}
+            </p>
+
+            <!-- COMMENTS -->
+            {% if video.comments %}
+            <div class="card mt-2">
+                <div class="card-body">
+                    {% for comment in video.comments %}
+                        <strong>{{ comment.user.username }}</strong>:
+                        {{ comment.text }}
+
+                        {% if comment.author == current_user.id
+                              or video.author == current_user.id %}
+                        <a
+                            href="/delete-video-comment/{{ comment.id }}"
+                            class="btn btn-danger btn-sm"
+                        >
+                            Delete
+                        </a>
+                        {% endif %}
+                        <hr>
+                    {% endfor %}
+                </div>
             </div>
+            {% else %}
+                <p class="text-muted">No comments yet.</p>
+            {% endif %}
+
+            <!-- COMMENT FORM -->
+            <form
+                action="{{ url_for('views.comment_video', video_id=video.id) }}"
+                method="POST"
+                class="mt-2"
+            >
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="text"
+                        class="form-control"
+                        placeholder="Write a comment..."
+                    >
+                    <button class="btn btn-primary">Post</button>
+                </div>
+            </form>
+
         </div>
     </div>
-    {% endfor %}
-
 </div>
+{% endfor %}
 
 <hr>
 
@@ -123,5 +169,7 @@
 
     </div>
 </form>
+
+
 
 {% endblock %}
