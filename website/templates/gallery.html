@@ -25,6 +25,12 @@
                     on {{ piece.date_created.strftime('%Y-%m-%d') }}
                 </p>
 
+                <a href="{{ url_for('views.like_post', post_type='art', post_id=piece.id) }}"
+                    class="btn btn-sm btn-outline-danger">
+                     ❤️ {{ piece.likes|length }}
+                </a>
+
+
                 <!-- COMMENTS (unchanged) -->
                 {% if piece.comments %}
                 <div class="card mt-2">
@@ -91,7 +97,13 @@
                 </a><br>
                 on {{ video.date_created.strftime('%Y-%m-%d') }}
             </p>
+             
+            <a href="{{ url_for('views.like_post', post_type='video', post_id=video.id) }}"
+                class="btn btn-outline-light btn-sm">
+                ❤️ {{ video.like_count }}
+            </a>
 
+            
             <!-- COMMENTS -->
             {% if video.comments %}
             <div class="card mt-2">
@@ -116,6 +128,9 @@
             {% else %}
                 <p class="text-muted">No comments yet.</p>
             {% endif %}
+
+           
+
 
             <!-- COMMENT FORM -->
             <form

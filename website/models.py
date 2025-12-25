@@ -4,10 +4,16 @@ from sqlalchemy.sql import func
 from datetime import datetime
 
 
-followers = db.Table('followers',
+# =========================
+# FOLLOW SYSTEM
+# =========================
+
+followers = db.Table(
+    'followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
+
 
 class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,18 +21,24 @@ class Follow(db.Model):
     followed_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
+# =========================
+# USER
+# =========================
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(125), unique=True)
     username = db.Column(db.String(60), unique=True)
     password = db.Column(db.String(100))
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
     bio = db.Column(db.Text, default="")
     profile_pic = db.Column(db.String(300), default="default.png")
+
+    profile_image = db.Column(db.String(150), nullable=True, default=None)
+
     posts = db.relationship('Post', backref='user', passive_deletes=True)
     comments = db.relationship('Comment', backref='user', passive_deletes=True)
-    likes = db.relationship('Like', backref='user', passive_deletes=True)
-    profile_image = db.Column(db.String(150), nullable=True, default=None)
+    
 
     followed = db.relationship(
         'Follow',
@@ -57,52 +69,74 @@ class User(db.Model, UserMixin):
         return self.followed.filter_by(followed_id=user.id).first() is not None
 
 
+# =========================
+# TEXT POSTS (optional)
+# =========================
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
     comments = db.relationship('Comment', backref='post', passive_deletes=True)
-    likes = db.relationship('Like', backref='post', passive_deletes=True)
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(225), nullable=False)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete="CASCADE"), nullable=False)
 
 
-class Like(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete="CASCADE"), nullable=False)
+# =========================
+# ART
+# =========================
 
 class Art(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    art = db.Column(db.String(150), nullable=True, default=None)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    art = db.Column(db.String(150), nullable=True)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
     user = db.relationship('User', backref='arts')
+    comments = db.relationship(
+        'ArtComment',
+        backref='art',
+        cascade='all, delete-orphan'
+    )
+
+    @property
+    def likes(self):
+        return Like.query.filter_by(post_id=self.id, post_type='art').all()
+
+    @property
+    def like_count(self):
+        return len(self.likes)
 
 
 class ArtComment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(225), nullable=False)
-    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
-    author = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     art_id = db.Column(db.Integer, db.ForeignKey('art.id', ondelete="CASCADE"), nullable=False)
 
     user = db.relationship('User', backref='art_comments')
-    art = db.relationship('Art', backref='comments')
+
+
+# =========================
+# VIDEO
+# =========================
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video = db.Column(db.String(150), nullable=False)
-    date_created = db.Column(db.DateTime, default=func.utcnow)
-    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+
+    user = db.relationship('User', backref='videos')
 
     comments = db.relationship(
         'VideoComment',
@@ -110,16 +144,53 @@ class Video(db.Model):
         cascade='all, delete-orphan'
     )
 
-    user = db.relationship('User')
+    @property
+    def likes(self):
+        return Like.query.filter_by(post_id=self.id, post_type='video').all()
+
+    @property
+    def like_count(self):
+        return len(self.likes)
+
 
 class VideoComment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(500), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    author = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    video_id = db.Column(db.Integer, db.ForeignKey('video.id', ondelete="CASCADE"), nullable=False)
 
     user = db.relationship('User')
 
 
+# =========================
+# LIKES (ART + VIDEO)
+# =========================
+
+class Like(db.Model):
+    __tablename__ = 'likes'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete="CASCADE"),
+        nullable=False
+    )
+
+    post_id = db.Column(db.Integer, nullable=False)
+    post_type = db.Column(db.String(10), nullable=False)  # 'art' or 'video'
+
+    date_created = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            'user_id',
+            'post_id',
+            'post_type',
+            name='unique_like'
+        ),
+    )
+
+    # NO backref to avoid conflicts
+    user = db.relationship('User')

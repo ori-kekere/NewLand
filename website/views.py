@@ -1,4 +1,4 @@
-from flask import Blueprint,render_template, request, flash, redirect, url_for
+from flask import Blueprint,render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
 from .models import Post, User, Comment, Like, Art, ArtComment, Video, VideoComment
 from . import db
@@ -40,7 +40,7 @@ def create_post():
             flash('Post cannot be empty!', category='error')
         
         else:
-            post = Post(text=text, author=current_user.id)
+            post = Post(text=text, user_id=current_user.id)
             db.session.add(post)
             db.session.commit()
             flash('Post has been created!', category='success')
@@ -56,7 +56,7 @@ def delete_post(id):
 
     if not post:
         flash('Post does not exist!', category='error')
-    elif current_user.id != post.author:  
+    elif current_user.id != post.user_id:  
         flash('You do not have permission to delete this post!', category='error')
     else:
         db.session.delete(post)
@@ -78,7 +78,7 @@ def create_comment(post_id):
         post = Post.query.filter_by(id=post_id)
 
         if post:
-            comment = Comment(text=text, author = current_user.id, post_id=post_id)
+            comment = Comment(text=text, user_id = current_user.id, post_id=post_id)
             db.session.add(comment)
             db.session.commit()
         else:
@@ -95,7 +95,7 @@ def delete_comment(comment_id):
     if not comment:
         flash('Comment does not exist!', category='error')
 
-    elif current_user.id != comment.author and current_user.id != comment.post.author:
+    elif current_user.id != comment.user_id and current_user.id != comment.post.user_id:
         flash('Thou shall not have permission to delete this comment.', category='error')
 
     else:
@@ -106,23 +106,38 @@ def delete_comment(comment_id):
 
     return redirect(url_for('views.home'))
 
-@views.route("/like-post/<post_id>", methods=["GET"])
+@views.route('/like-post/<int:post_id>')
 @login_required
-def like(post_id):
-    post = Post.query.filter_by(id=post_id)
-    like = Like.query.filter_by(author=current_user.id, post_id=post_id).first()
+def like_post(post_id):
+    post_type = request.args.get('post_type')
 
-    if not post:
-        flash('That post does not exist!', category='error')
-    elif like:
+    if post_type not in ['art', 'video', 'post']:
+        abort(400)
+
+    if not post_type:
+        flash("Invalid like request", category="error")
+        return redirect(request.referrer)
+
+
+    like = Like.query.filter_by(
+        user_id=current_user.id,
+        post_id=post_id,
+        post_type=post_type
+    ).first()
+
+    if like:
         db.session.delete(like)
-        db.session.commit()
     else:
-        like = Like(author=current_user.id, post_id=post_id)
-        db.session.add(like)
-        db.session.commit()
+        db.session.add(Like(
+            user_id=current_user.id,
+            post_id=post_id,
+            post_type=post_type
+        ))
 
-    return redirect(url_for('views.home'))
+    db.session.commit()
+    return redirect(request.referrer)
+
+
 
 @views.route('/follow/<int:user_id>')
 @login_required
@@ -146,11 +161,11 @@ def unfollow(user_id):
 @views.route("/profile/<int:user_id>")
 def profile(user_id):
     user = User.query.get_or_404(user_id)
-    posts = Post.query.filter_by(author=user.id).order_by(Post.date_created.desc()).all()
-    arts = Art.query.filter_by(author=user.id)\
+    posts = Post.query.filter_by(user_id=user.id).order_by(Post.date_created.desc()).all()
+    arts = Art.query.filter_by(user_id=user.id)\
         .order_by(Art.date_created.desc()).all()
 
-    videos = Video.query.filter_by(author=user.id)\
+    videos = Video.query.filter_by(user_id=user.id)\
         .order_by(Video.date_created.desc()).all()
 
     return render_template("profile.html", user=user, posts=posts, arts=arts, videos=videos)
@@ -237,7 +252,7 @@ def comment_art(art_id):
         flash("Comment cannot be empty.", category="error")
         return redirect(url_for("art"))
 
-    comment = ArtComment(text=text, author=current_user.id, art_id=art_id)
+    comment = ArtComment(text=text, user_id=current_user.id, art_id=art_id)
     db.session.add(comment)
     db.session.commit()
     return redirect(url_for("views.art"))
@@ -247,8 +262,8 @@ def comment_art(art_id):
 def delete_art_comment(comment_id):
     comment = ArtComment.query.get_or_404(comment_id)
 
-    # Only the comment author or the art author can delete
-    if comment.author != current_user.id and comment.art.author != current_user.id:
+    # Only the comment user_id or the art user_id can delete
+    if comment.user_id != current_user.id and comment.art.user_id != current_user.id:
         flash("You don't have permission to delete this comment.", category="error")
         return redirect(url_for("art"))
 
@@ -281,7 +296,7 @@ def gallery():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
 
-            new_art = Art(art=filename, author=current_user.id)
+            new_art = Art(art=filename, user_id=current_user.id)
             db.session.add(new_art)
             db.session.commit()
             flash('Art posted!', category='success')
@@ -295,7 +310,7 @@ def gallery():
             filepath = os.path.join(VIDEO_UPLOAD_FOLDER, filename)
             file.save(filepath)
 
-            new_video = Video(video=filename, author=current_user.id)
+            new_video = Video(video=filename, user_id=current_user.id)
             db.session.add(new_video)
             db.session.commit()
             flash('Video uploaded!', category='success')
@@ -327,7 +342,7 @@ def comment_video(video_id):
     else:
         comment = VideoComment(
             text=text,
-            author=current_user.id,
+            user_id=current_user.id,
             video_id=video.id
         )
         db.session.add(comment)
@@ -340,7 +355,7 @@ def comment_video(video_id):
 def delete_video_comment(comment_id):
     comment = VideoComment.query.get_or_404(comment_id)
 
-    if comment.author != current_user.id and comment.video.author != current_user.id:
+    if comment.user_id != current_user.id and comment.video.user_id != current_user.id:
         abort(403)
 
     db.session.delete(comment)
@@ -348,3 +363,30 @@ def delete_video_comment(comment_id):
     flash('Comment deleted.', category='success')
 
     return redirect(request.referrer)
+
+@views.route('/like/<string:post_type>/<int:post_id>')
+@login_required
+def like_gallery(post_type, post_id):
+    if post_type not in ['art', 'video']:
+        abort(404)
+
+    existing_like = Like.query.filter_by(
+        user_id=current_user.id,
+        post_id=post_id,
+        post_type=post_type
+    ).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+    else:
+        like = Like(
+            user_id=current_user.id,
+            post_id=post_id,
+            post_type=post_type
+        )
+        db.session.add(like)
+        db.session.commit()
+
+    return redirect(request.referrer)
+
