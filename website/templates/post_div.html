@@ -12,17 +12,13 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
 
-      <a href="{{ url_for('views.like_post', post_id=post.id, post_type='post') }}">
-        ❤️ {{ post.likes|length }}
+      <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
+        ❤️ {{ post.like_count }}
       </a>
 
       {% if user.id == post.user_id %}
       <div class="btn-group">
-        <button
-          type="button"
-          class="btn btn-primary dropdown-toggle"
-          data-bs-toggle="dropdown">
-        </button>
+        <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
         <ul class="dropdown-menu">
           <li>
             <a href="/delete-post/{{ post.id }}" class="dropdown-item">Delete</a>
@@ -33,14 +29,22 @@
     </div>
 
     <div class="card-body">
-      <div class="card-text">{{ post.text }}</div>
+      <p>{{ post.text }}</p>
 
       <div class="collapse" id="comments-{{ post.id }}">
         {% for comment in post.comments %}
-        <p>
-          <strong>{{ comment.user.username }}:</strong>
-          {{ comment.text }}
-        </p>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span>
+            <strong>{{ comment.user.username }}:</strong> {{ comment.text }}
+          </span>
+
+          {% if user.id == comment.user_id or user.id == post.user_id %}
+            <a href="{{ url_for('views.delete_comment', comment_id=comment.id) }}"
+               class="btn btn-sm btn-danger">
+              Delete
+            </a>
+          {% endif %}
+        </div>
         {% endfor %}
       </div>
 
@@ -52,15 +56,8 @@
       <small class="text-muted">No comments yet.</small>
       {% endif %}
 
-      <form
-        action="/create-comment/{{ post.id }}"
-        method="POST"
-        class="input-group mt-2">
-        <input
-          type="text"
-          name="text"
-          class="form-control"
-          placeholder="Write a comment">
+      <form action="/create-comment/{{ post.id }}" method="POST" class="input-group mt-2">
+        <input type="text" name="text" class="form-control" placeholder="Write a comment">
         <button class="btn btn-primary">Comment</button>
       </form>
     </div>
@@ -81,4 +78,3 @@
 </div>
 
 {% endblock %}
-

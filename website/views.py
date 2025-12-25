@@ -78,9 +78,14 @@ def create_comment(post_id):
         post = Post.query.filter_by(id=post_id)
 
         if post:
-            comment = Comment(text=text, user_id = current_user.id, post_id=post_id)
+            comment = Comment(
+                text=text,
+                user_id=current_user.id,
+                post_id=post.id
+            )
             db.session.add(comment)
             db.session.commit()
+
         else:
             flash('Post does not exists!', category='error')
 
@@ -95,7 +100,11 @@ def delete_comment(comment_id):
     if not comment:
         flash('Comment does not exist!', category='error')
 
-    elif current_user.id != comment.user_id and current_user.id != comment.post.user_id:
+    if comment.user_id != current_user.id and comment.post.user_id != current_user.id:
+        abort(403)
+
+
+    if current_user.id != comment.user_id and current_user.id != comment.post.user_id:
         flash('Thou shall not have permission to delete this comment.', category='error')
 
     else:
@@ -106,18 +115,18 @@ def delete_comment(comment_id):
 
     return redirect(url_for('views.home'))
 
-@views.route('/like-post/<int:post_id>')
+@views.route('/like/<post_type>/<int:post_id>')
 @login_required
-def like_post(post_id):
-    post_type = request.args.get('post_type')
+def like_post(post_type, post_id):
 
-    if post_type not in ['art', 'video', 'post']:
+    if post_type == 'post':
+        item = Post.query.get_or_404(post_id)
+    elif post_type == 'art':
+        item = Art.query.get_or_404(post_id)
+    elif post_type == 'video':
+        item = Video.query.get_or_404(post_id)
+    else:
         abort(400)
-
-    if not post_type:
-        flash("Invalid like request", category="error")
-        return redirect(request.referrer)
-
 
     like = Like.query.filter_by(
         user_id=current_user.id,
@@ -128,14 +137,13 @@ def like_post(post_id):
     if like:
         db.session.delete(like)
     else:
-        db.session.add(Like(
-            user_id=current_user.id,
-            post_id=post_id,
-            post_type=post_type
-        ))
+        db.session.add(
+            Like(user_id=current_user.id, post_id=post_id, post_type=post_type)
+        )
 
     db.session.commit()
     return redirect(request.referrer)
+
 
 
 

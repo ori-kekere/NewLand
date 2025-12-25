@@ -81,6 +81,14 @@ class Post(db.Model):
 
     comments = db.relationship('Comment', backref='post', passive_deletes=True)
 
+    @property
+    def likes(self):
+        return Like.query.filter_by(post_id=self.id, post_type='post').all()
+
+    @property
+    def like_count(self):
+        return len(self.likes)
+
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
