@@ -75,8 +75,8 @@ def create_comment(post_id):
     if not text:
         flash('Comment cannot be empty!', category='error')
     else:
-        post = Post.query.filter_by(id=post_id)
-
+        post = Post.query.get(post_id)
+        
         if post:
             comment = Comment(
                 text=text,
