@@ -75,7 +75,7 @@
                     </div>
                     <div class="text-end">
                       <small class="text-muted">{{ comment.date_created }}</small>
-                      {% if user.id == comment.author or user.id == post.author %}
+                      {% if user.id == comment.user_id or user.id == post.user_id %}
                       <div class="btn-group ms-2">
                         <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
                         <ul class="dropdown-menu">

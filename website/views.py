@@ -248,7 +248,7 @@ def edit_profile():
 @views.route('/art', methods=['GET', 'POST'])
 @login_required
 def art():
-    return redirect(url_for('views.gallery'))
+    return redirect(url_for('views.media'))
 
 
 
@@ -283,12 +283,12 @@ def delete_art_comment(comment_id):
 @views.route('/videos', methods=['GET', 'POST'])
 @login_required
 def videos():
-    return redirect(url_for('views.gallery'))
+    return redirect(url_for('views.media'))
 
 
-@views.route('/gallery', methods=['GET', 'POST'])
+@views.route('/media', methods=['GET', 'POST'])
 @login_required
-def gallery():
+def media():
     # Handle uploads
     if request.method == 'POST':
         file = request.files.get('file')
@@ -296,7 +296,7 @@ def gallery():
 
         if not file or file.filename == '':
             flash('No file selected.', category='error')
-            return redirect(url_for('views.gallery'))
+            return redirect(url_for('views.media'))
 
         # ART upload
         if upload_type == 'art' and allowed_file(file.filename):
@@ -326,7 +326,7 @@ def gallery():
         else:
             flash('Invalid file type.', category='error')
 
-        return redirect(url_for('views.gallery'))
+        return redirect(url_for('views.media'))
 
     # Fetch both
     arts = Art.query.order_by(Art.date_created.desc()).all()
@@ -374,7 +374,7 @@ def delete_video_comment(comment_id):
 
 @views.route('/like/<string:post_type>/<int:post_id>')
 @login_required
-def like_gallery(post_type, post_id):
+def like_media(post_type, post_id):
     if post_type not in ['art', 'video']:
         abort(404)
 
