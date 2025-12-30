@@ -258,7 +258,7 @@ def comment_art(art_id):
     text = request.form.get("text")
     if not text.strip():
         flash("Comment cannot be empty.", category="error")
-        return redirect(url_for("art"))
+        return redirect(url_for("views.art"))
 
     comment = ArtComment(text=text, user_id=current_user.id, art_id=art_id)
     db.session.add(comment)
