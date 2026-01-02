@@ -36,13 +36,16 @@
                 <div class="card mt-2">
                     <div class="card-body">
                         {% for comment in piece.comments %}
-                            <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+                        <div>
+                            <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>: {{ comment.text }}
 
                             {% if comment.user_id == current_user.id or piece.user_id == current_user.id %}
+                            <br/>
                             <a href="/delete-art-comment/{{ comment.id }}"
                                class="btn btn-danger btn-sm">
                                 Delete
                             </a>
+                        </div>    
                             {% endif %}
                             <hr>
                         {% endfor %}
@@ -109,17 +112,20 @@
             <div class="card mt-2">
                 <div class="card-body">
                     {% for comment in video.comments %}
-                        <strong>{{ comment.user.username }}</strong>:
-                        {{ comment.text }}
+                    <div>
+                        <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>: {{ comment.text }}
 
                         {% if comment.user_id == current_user.id
                               or video.user_id == current_user.id %}
+                        <br/>
                         <a
                             href="/delete-video-comment/{{ comment.id }}"
                             class="btn btn-danger btn-sm"
                         >
+                        
                             Delete
                         </a>
+                    </div>
                         {% endif %}
                         <hr>
                     {% endfor %}
@@ -157,7 +163,7 @@
 <hr>
 
 <!-- UPLOAD SECTION -->
-<h3 align="center">Post</h3>
+<h3 align="center">Upload Media</h3>
 
 <form method="POST" enctype="multipart/form-data">
     <div class="form-group text-center">
@@ -177,7 +183,7 @@
         <button
             name="type"
             value="video"
-            class="btn btn-secondary mx-2"
+            class="btn btn-primary mx-2"
         >
             Upload Video
         </button>

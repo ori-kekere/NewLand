@@ -36,6 +36,11 @@
         <div class="d-flex justify-content-between align-items-center mb-1">
           <span>
             <strong>{{ comment.user.username }}:</strong> {{ comment.text }}
+            <div class="card-footer text-muted">
+              <small>
+               {{ comment.date_created.strftime('%B %d, %Y') }}
+              </small>
+            </div>
           </span>
 
           {% if user.id == comment.user_id or user.id == post.user_id %}

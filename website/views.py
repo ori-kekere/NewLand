@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import os
 import uuid
 
+
 views = Blueprint("views", __name__)
 
 UPLOAD_FOLDER = os.path.join('website', 'static', 'art')

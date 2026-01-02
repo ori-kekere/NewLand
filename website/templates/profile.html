@@ -12,14 +12,14 @@
 <div class="profile-container">
     <h2>{{ user.username }}</h2>
     <p><strong>Bio:</strong> {{ user.bio or "No bio yet." }}</p>
-    <p><strong>Account was Made On: </strong>{{ user.date_created }}</p>
+    <p><strong>Account was Made On: </strong>{{ user.date_created.strftime('%B %d, %Y') }}</p>
     <p><strong>Followers:</strong> {{ user.followers.count() }}</p>
     <p><strong>Following:</strong> {{ user.followed.count() }}</p>
 
     {% if current_user.id == user.id %}
         <p><strong>Email:</strong> {{ user.email }}</p>
         <br/>
-        <a href="{{ url_for('views.edit_profile') }}" class="btn btn-secondary">Edit Profile</a>
+        <a href="{{ url_for('views.edit_profile') }}" class="btn btn-primary">Edit Profile</a>
     {% endif %}
 </div>
 
@@ -48,16 +48,13 @@
     <div class="row mb-4 space">
       <!-- Post Column -->
       <div class="col-md-8">
-        <div class="card border-dark banner-1">
+        <div class="card border-dark banner-2">
           <div class="card-header d-flex justify-content-between align-items-center">
             <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
             <div>
-              {{ post.likes|length }}
-              {% if user.id in post.likes|map(attribute="author")|list %}
-                <a href="/like-post/{{ post.id }}"><i class="fas fa-thumbs-up"></i></a>
-              {% else %}
-                <a href="/like-post/{{ post.id }}"><i class="far fa-thumbs-up"></i></a>
-              {% endif %}
+              <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
+               ❤️ {{ post.like_count }}
+             </a>
             </div>
           </div>
 
@@ -66,24 +63,28 @@
 
             <!-- Comments -->
             <div class="collapse" id="comments-{{ post.id }}">
-              <div class="card">
-                <div class="card-body comment" id="comments-expanded-{{ post.id }}">
+              <div>
+                <div id="comments-expanded-{{ post.id }}">
                   {% for comment in post.comments %}
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
                       <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>: {{ comment.text }}
+                      <div class="card-footer text-muted">
+                        <small>
+                          {{ comment.date_created.strftime('%B %d, %Y') }}
+                        </small>
+                      </div>
                     </div>
                     <div class="text-end">
-                      <small class="text-muted">{{ comment.date_created }}</small>
                       {% if user.id == comment.user_id or user.id == post.user_id %}
-                      <div class="btn-group ms-2">
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
-                        <ul class="dropdown-menu">
-                          <li><a href="/delete-comment/{{ comment.id }}" class="dropdown-item">Delete</a></li>
-                        </ul>
-                      </div>
+                      <a href="/delete-comment/{{ comment.id }}"
+                               class="btn btn-danger btn-sm">
+                                Delete
+                            </a>
                       {% endif %}
+                      <hr>
                     </div>
+                     
                   </div>
                   {% endfor %}
                 </div>
