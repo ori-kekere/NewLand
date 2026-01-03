@@ -30,8 +30,19 @@
                      ❤️ {{ piece.likes|length }}
                 </a>
 
+                {% if user.id == piece.user_id %}
+                <div class="btn-group right">
+                    <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                    <ul class="dropdown-menu">
+                    <li>
+                        <a href="/delete-art/{{ piece.id }}" class="dropdown-item">Delete</a>
+                    </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
 
-                <!-- COMMENTS (unchanged) -->
+                <!-- COMMENTS -->
                 {% if piece.comments %}
                 <div class="card mt-2">
                     <div class="card-body">
@@ -105,7 +116,16 @@
                 class="btn btn-outline-light btn-sm">
                 ❤️ {{ video.like_count }}
             </a>
-
+            {% if user.id == video.user_id %}
+                <div class="btn-group right">
+                    <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                    <ul class="dropdown-menu">
+                    <li>
+                        <a href="/delete-video/{{ video.id }}" class="dropdown-item">Delete</a>
+                    </li>
+                    </ul>
+                </div>
+            {% endif %}
             
             <!-- COMMENTS -->
             {% if video.comments %}

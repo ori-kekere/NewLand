@@ -399,3 +399,34 @@ def like_media(post_type, post_id):
 
     return redirect(request.referrer)
 
+@views.route('/delete-art/<id>')
+@login_required
+def delete_art(id):
+    art = Art.query.filter_by(id=id).first()
+
+    if not art:
+        flash('Artwork does not exist!', category='error')
+    elif current_user.id != art.user_id:  
+        flash('You do not have permission to delete this Artwork!', category='error')
+    else:
+        db.session.delete(art)
+        db.session.commit()
+        flash('Artwork has been deleted!', category='success')
+        
+    return redirect(url_for('views.media'))
+
+@views.route('/delete-video/<id>')
+@login_required
+def delete_video(id):
+    video = Video.query.filter_by(id=id).first()
+
+    if not video:
+        flash('Video does not exist!', category='error')
+    elif current_user.id != video.user_id:  
+        flash('You do not have permission to delete this Video!', category='error')
+    else:
+        db.session.delete(video)
+        db.session.commit()
+        flash('Video has been deleted!', category='success')
+        
+    return redirect(url_for('views.media'))

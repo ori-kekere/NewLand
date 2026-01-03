@@ -6,10 +6,10 @@ a {
     font-weight: bold;
 }
 
-.newlands {
-    background: linear-gradient(90deg, rgb(66, 24, 217), gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.right {
+  position: absolute;
+  right: 0px;
+  padding-bottom: 10px;
 }
 
 
