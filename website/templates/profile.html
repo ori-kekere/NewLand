@@ -45,17 +45,30 @@
 
   {% if posts %}
     {% for post in posts %}
-    <div class="row mb-4 space">
+    <div>
       <!-- Post Column -->
-      <div class="col-md-8">
+      <div>
         <div class="card border-dark banner-2">
           <div class="card-header d-flex justify-content-between align-items-center">
             <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
-            <div>
-              <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
-               ❤️ {{ post.like_count }}
-             </a>
-            </div>
+            
+              <center>
+                <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
+                  ❤️ {{ post.like_count }}
+                </a>
+              </center>  
+
+             {% if user.id == post.user_id %}
+              <div class="btn-group">
+                <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="/delete-post/{{ post.id }}" class="dropdown-item">Delete</a>
+                  </li>
+                </ul>
+              </div>
+             {% endif %}
+            
           </div>
 
           <div class="card-body">
@@ -90,7 +103,7 @@
                 </div>
               </div>
             </div>
-
+              
             <!-- Comment Toggle + Form -->
              <div>
               <p class="card-text">
@@ -113,7 +126,7 @@
           <div class="card-footer text-muted">{{ post.date_created.strftime('%B %d, %Y') }}</div>
         </div>
       </div>
-      
+      <br>
     {% endfor %}
   {% else %}
     <p>No posts yet.</p>
