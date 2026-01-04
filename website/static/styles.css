@@ -1,6 +1,7 @@
 .card-text {
     color: #FFF;
 }
+
 a {
     color: rgb(135, 195, 247);
     font-weight: bold;
@@ -32,4 +33,8 @@ a {
 
 .text-muted {
     color: #fff !important;
+}
+
+.center {
+    align-content: center;
 }

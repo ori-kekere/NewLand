@@ -170,6 +170,7 @@ def unfollow(user_id):
 
 @views.route("/profile/<int:user_id>")
 def profile(user_id):
+
     user = User.query.get_or_404(user_id)
     posts = Post.query.filter_by(user_id=user.id).order_by(Post.date_created.desc()).all()
     arts = Art.query.filter_by(user_id=user.id)\

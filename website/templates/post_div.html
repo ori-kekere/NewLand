@@ -12,9 +12,11 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <a href="/profile/{{ post.user.id }}">{{ post.user.username }}</a>
 
-      <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
-        ❤️ {{ post.like_count }}
-      </a>
+      <div class="center">
+        <a href="{{ url_for('views.like_post', post_type='post', post_id=post.id) }}">
+          ❤️ {{ post.like_count }}
+        </a>
+      </div>
 
       {% if user.id == post.user_id %}
       <div class="btn-group">
