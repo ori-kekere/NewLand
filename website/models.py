@@ -26,7 +26,10 @@ class Follow(db.Model):
 # =========================
 
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
+
+    __table_args__ = {'sqlite_autoincrement': True}
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(125), unique=True)
     username = db.Column(db.String(60), unique=True)
     password = db.Column(db.String(100))
@@ -36,7 +39,6 @@ class User(db.Model, UserMixin):
 
     profile_image = db.Column(db.String(150), nullable=True, default=None)
 
-    posts = db.relationship('Post', backref='user', passive_deletes=True)
     comments = db.relationship('Comment', backref='user', passive_deletes=True)
     
 
@@ -56,6 +58,28 @@ class User(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
 
+    arts = db.relationship(
+        'Art',
+        backref='user',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
+    posts = db.relationship(
+        'Post',
+        backref='user',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
+    videos = db.relationship(
+        'Video',
+        backref='user',
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
+
     def follow(self, user):
         if not self.is_following(user):
             db.session.add(Follow(follower_id=self.id, followed_id=user.id))
@@ -70,7 +94,7 @@ class User(db.Model, UserMixin):
 
 
 # =========================
-# TEXT POSTS (optional)
+# TEXT POSTS 
 # =========================
 
 class Post(db.Model):
@@ -106,9 +130,14 @@ class Art(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     art = db.Column(db.String(150), nullable=True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
 
-    user = db.relationship('User', backref='arts')
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    
     comments = db.relationship(
         'ArtComment',
         backref='art',
@@ -122,6 +151,7 @@ class Art(db.Model):
     @property
     def like_count(self):
         return len(self.likes)
+
 
 
 class ArtComment(db.Model):
@@ -142,9 +172,11 @@ class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video = db.Column(db.String(150), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
-
-    user = db.relationship('User', backref='videos')
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        nullable=False
+    )
 
     comments = db.relationship(
         'VideoComment',

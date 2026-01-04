@@ -9,6 +9,20 @@
 <img src="{{ url_for('static', filename='uploads/default.png') }}" height="150" width="150">
 {% endif %}
 
+{% if current_user.id == user.id %}
+  <div class="btn-group float-end">
+    <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href="{{ url_for('views.delete_user', user_id=user.id) }}"
+           class="dropdown-item text-danger">
+          Delete Account
+        </a>
+      </li>
+    </ul>
+  </div>
+{% endif %}
+
 <div class="profile-container">
     <h2>{{ user.username }}</h2>
     <p><strong>Bio:</strong> {{ user.bio or "No bio yet." }}</p>

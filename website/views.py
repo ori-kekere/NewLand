@@ -2,6 +2,7 @@ from flask import Blueprint,render_template, request, flash, redirect, url_for, 
 from flask_login import login_required, current_user
 from .models import Post, User, Comment, Like, Art, ArtComment, Video, VideoComment
 from . import db
+from .auth import logout_user
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -430,3 +431,14 @@ def delete_video(id):
         flash('Video has been deleted!', category='success')
         
     return redirect(url_for('views.media'))
+
+@views.route('/delete-user/<int:user_id>')
+@login_required
+def delete_user(user_id):
+    if current_user.id != user_id:
+        abort(403)
+
+    db.session.delete(current_user)
+    db.session.commit()
+    logout_user()
+    return redirect(url_for('auth.login'))
