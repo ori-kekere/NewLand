@@ -294,6 +294,7 @@ def videos():
 def media():
     # Handle uploads
     if request.method == 'POST':
+        title = request.form.get('title')
         file = request.files.get('file')
         upload_type = request.form.get('type')  # "art" or "video"
 
@@ -303,11 +304,18 @@ def media():
 
         # ART upload
         if upload_type == 'art' and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            ext = os.path.splitext(file.filename)[1]
+            filename = f"{uuid.uuid4().hex}{ext}"
+
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
 
-            new_art = Art(art=filename, user_id=current_user.id)
+            new_art = Art(
+                title=title,
+                art=filename,
+                user_id=current_user.id
+            )
+
             db.session.add(new_art)
             db.session.commit()
             flash('Art posted!', category='success')
@@ -321,7 +329,12 @@ def media():
             filepath = os.path.join(VIDEO_UPLOAD_FOLDER, filename)
             file.save(filepath)
 
-            new_video = Video(video=filename, user_id=current_user.id)
+            new_video = Video(
+                title=title,
+                video=filename,
+                user_id=current_user.id
+            )
+
             db.session.add(new_video)
             db.session.commit()
             flash('Video uploaded!', category='success')
@@ -401,6 +414,7 @@ def like_media(post_type, post_id):
 
     return redirect(request.referrer)
 
+
 @views.route('/delete-art/<id>')
 @login_required
 def delete_art(id):
@@ -416,6 +430,7 @@ def delete_art(id):
         flash('Artwork has been deleted!', category='success')
         
     return redirect(url_for('views.media'))
+
 
 @views.route('/delete-video/<id>')
 @login_required
@@ -433,6 +448,7 @@ def delete_video(id):
         
     return redirect(url_for('views.media'))
 
+
 @views.route('/delete-user/<int:user_id>')
 @login_required
 def delete_user(user_id):
@@ -443,3 +459,41 @@ def delete_user(user_id):
     db.session.commit()
     logout_user()
     return redirect(url_for('auth.login'))
+
+
+
+@views.route("/search")
+@login_required
+def search():
+    q = request.args.get("q", "").strip()
+
+    if not q:
+        return render_template(
+            "search.html",
+            query=q,
+            users=[],
+            posts=[],
+            arts=[],
+            videos=[]
+        )
+
+    users = User.query.filter(
+        User.username.ilike(f"%{q}%")
+    ).all()
+
+    posts = Post.query.filter(
+        Post.text.ilike(f"%{q}%")
+    ).all()
+
+    arts = Art.query.filter(Art.title.ilike(f"%{q}%")).all()
+    videos = Video.query.filter(Video.title.ilike(f"%{q}%")).all()
+
+
+    return render_template(
+        "search.html",
+        query=q,
+        users=users,
+        posts=posts,
+        arts=arts,
+        videos=videos
+    )

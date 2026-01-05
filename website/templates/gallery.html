@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block title %} Media {% endblock %} {% block
 content %}
 
-<h3 align="center">Media</h3>
+<h2 align="center">Media</h2>
 
 <div class="row">
   <!-- ART CARDS -->
@@ -11,11 +11,17 @@ content %}
       class="card"
       style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
     >
-      <img
-        src="{{ url_for('static', filename='art/' + piece.art) }}"
-        class="card-img-top"
-        alt="Art"
-      />
+      <h3 class="mt-2 fw-bold">{{ piece.title }}</h3>
+      <a
+        href="{{ url_for('static', filename='art/' + piece.art) }}"
+        target="_blank"
+      >
+        <img
+          src="{{ url_for('static', filename='art/' + piece.art) }}"
+          class="card-img-top art-image"
+          alt="Art"
+        />
+      </a>
 
       <div class="card-body">
         <p class="card-text">
@@ -102,6 +108,8 @@ content %}
       class="card"
       style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
     >
+      <h2 class="mt-2 fw-bold">{{ video.title }}</h2>
+
       <video class="card-img-top" controls>
         <source
           src="{{ url_for('static', filename='videos/' + video.video) }}"
@@ -195,6 +203,14 @@ content %}
 
   <form method="POST" enctype="multipart/form-data">
     <div class="form-group text-center">
+      <input
+        type="text"
+        name="title"
+        class="form-control mb-2"
+        placeholder="Title"
+        required
+      />
+
       <input type="file" name="file" required />
 
       <br /><br />

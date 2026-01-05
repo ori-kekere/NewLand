@@ -35,15 +35,26 @@
                   <a class="nav-item nav-link" href="/users">People</a>
                   <a class="nav-item nav-link" href="/media">The Media</a>
                   <a class="nav-item nav-link" href="/logout">Logout</a>
+                  <form action="{{ url_for('views.search') }}" method="GET" class="d-flex">
+                    <input
+                      class="form-control me-2"
+                      type="search"
+                      name="q"
+                      placeholder="Search users, posts, art, videos"
+                      required
+                    >
+                    <button class="btn btn-outline-primary">Search</button>
+                  </form>
+
                   
 
-                  {% if user.profile_image %}
+                  {% if current_user.profile_image %}
                   <div style="padding-left: 1300px;">
-                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + user.profile_image) }}" height="50" width="50"></a>
+                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}" height="50" width="50"></a>
                   </div>
                   {% else %}
                   <div style="padding-left: 1300px;">
-                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}" height="50" width="50"></a>
+                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" height="50" width="50"></a>
                   </div>
                   {% endif %}
 

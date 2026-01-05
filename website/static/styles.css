@@ -38,3 +38,28 @@ a {
 .center {
     align-content: center;
 }
+
+.card-img-top.art-image {
+  height: 250px !important;
+  width: 100%;
+  object-fit: cover;
+}
+
+.art-image-wrapper {
+  height: 250px;
+  overflow: hidden;
+}
+
+.art-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.art-video {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+

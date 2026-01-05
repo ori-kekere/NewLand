@@ -206,14 +206,14 @@
   <br />
   <hr />
   <!-- Art Column -->
-  <div class="col-md-4">
+  <div class="col-md-4 my-3">
     {% if arts %} {% for piece in arts %}
-    <div class="card mb-3" style="background-color: rgba(81, 81, 188, 0.79)">
-      <img
-        src="{{ url_for('static', filename='art/' + piece.art) }}"
-        class="card-img-top"
-        alt="Art"
-      />
+    <div class="card" style="background-color: rgba(81, 81, 188, 0.79)">
+      <div class="art-image">
+        <a href="{{ url_for('static', filename='art/' + piece.art) }}" target="_blank">
+          <img src="{{ url_for('static', filename='art/' + piece.art) }}" class="card-img-top" />
+        </a>
+      </div>
       <div class="card-body">
         <p class="card-text">
           Posted by
@@ -290,6 +290,7 @@
       </div>
     </div>
   </div>
+  <br>
   {% endfor %} {% else %}
   <p class="text-muted text-center">
     {{ user.username }} hasn't posted any art yet.

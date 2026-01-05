@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<h2>Search results for "{{ query }}"</h2>
+
+<hr>
+
+<h4>Users</h4>
+{% for user in users %}
+  <p>
+    <a href="/profile/{{ user.id }}">{{ user.username }}</a>
+  </p>
+{% else %}
+  <small>No users found</small>
+{% endfor %}
+
+<hr>
+
+<h4>Posts</h4>
+{% for post in posts %}
+  <div class="card mb-2">
+    <div class="card-body">
+      <a href="{{ url_for('views.home') }}#post-{{ post.id }}"
+         class="text-decoration-none text-dark">
+        {{ post.text[:120] }}{% if post.text|length > 120 %}...{% endif %}
+      </a>
+      <br>
+      <small class="text-muted">
+        by {{ post.user.username }}
+      </small>
+    </div>
+  </div>
+{% else %}
+  <small>No posts found</small>
+{% endfor %}
+
+<hr>
+
+<h4>Art</h4>
+{% for art in arts %}
+  <div class="mb-2">
+    <h3>{{ art.title }}</h3>
+    <a href="{{ url_for('views.media'`) }}">
+    <br>
+      
+      <img
+        src="{{ url_for('static', filename='art/' + art.art) }}"
+        width="150" height="150"
+      >
+      
+    </a>
+  </div>
+{% else %}
+  <small>No art found</small>
+{% endfor %}
+
+
+<hr>
+
+<h4>Videos</h4>
+{% for video in videos %}
+  <h3>{{ video.title }}</h3>
+    <a href="{{ url_for('views.media') }}">
+    <br>
+      
+     <video class="card-img-top" controls>
+        <source
+          src="{{ url_for('static', filename='videos/' + video.video) }}"
+          type="video/mp4"
+        />
+      </video>
+      
+    </a>
+{% else %}
+  <small>No videos found</small>
+{% endfor %}
+
+
+{% endblock %}
