@@ -222,6 +222,8 @@
           class="card-img-top"
           alt="Art"
         />
+        <a href="{{ url_for('views.view_art', art_id=piece.id) }}">Visit</a>
+
 
         <div class="card-body">
           <p class="card-text">
@@ -307,12 +309,15 @@
         <h3 class="mt-2 fw-bold text-center">{{ video.title }}</h3>
         {% endif %}
 
-        <video controls class="w-100">
-          <source
-            src="{{ url_for('static', filename='videos/' + video.video) }}"
-            type="video/mp4"
-          />
-        </video>
+        <a href="{{ url_for('views.view_video', video_id=video.id) }}">
+          <video class="card-img-top art-video" controls>
+            <source
+              src="{{ url_for('static', filename='videos/' + video.video) }}"
+              type="video/mp4"
+            />
+          </video>
+        </a>
+
 
         <div class="card-body">
           <p class="card-text">

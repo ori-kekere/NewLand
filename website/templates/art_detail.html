@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ art.title or "Artwork" }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center">{{ art.title }}</h2>
+
+  <p class="text-center">
+    by <a href="{{ url_for('views.profile', user_id=art.user.id) }}">
+      {{ art.user.username }}
+    </a>
+  </p>
+
+  <div class="text-center">
+    <img
+      src="{{ url_for('static', filename='art/' + art.art) }}"
+      class="img-fluid rounded"
+    />
+  </div>
+
+  <div class="mt-3 text-center">
+    <a
+      href="{{ url_for('views.like_post', post_type='art', post_id=art.id) }}"
+      class="btn btn-outline-danger"
+    >
+      ❤️ {{ art.likes|length }}
+    </a>
+  </div>
+
+  <hr />
+
+  <h4>Comments</h4>
+
+  {% for comment in art.comments %}
+  <div class="mb-2">
+    <strong>
+      <a href="{{ url_for('views.profile', user_id=comment.user.id) }}">
+        {{ comment.user.username }}
+      </a>
+    </strong>:
+    {{ comment.text }}
+  </div>
+  {% else %}
+  <p class="text-muted">No comments yet.</p>
+  {% endfor %}
+
+  <form
+    action="{{ url_for('views.comment_art', art_id=art.id) }}"
+    method="POST"
+    class="mt-3"
+  >
+    <div class="input-group">
+      <input
+        type="text"
+        name="text"
+        class="form-control"
+        placeholder="Write a comment..."
+      />
+      <button class="btn btn-primary">Comment</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -45,9 +45,11 @@
     <br>
       
       <img
-        src="{{ url_for('static', filename='art/' + art.art) }}"
-        width="150" height="150"
-      >
+          src="{{ url_for('static', filename='art/' + art.art) }}"
+          width="150" height="150"
+          alt="Art"
+      />
+      <a href="{{ url_for('views.view_art', art_id=art.id) }}">Visit</a>
       
     </a>
   </div>

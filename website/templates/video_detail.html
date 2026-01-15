@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title or "Video" }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center">{{ video.title }}</h2>
+
+  <p class="text-center">
+    by <a href="{{ url_for('views.profile', user_id=video.user.id) }}">
+      {{ video.user.username }}
+    </a>
+  </p>
+
+  <div class="text-center">
+    <video class="w-100 rounded" controls>
+      <source
+        src="{{ url_for('static', filename='videos/' + video.video) }}"
+        type="video/mp4"
+      />
+    </video>
+  </div>
+
+  <div class="mt-3 text-center">
+    <a
+      href="{{ url_for('views.like_post', post_type='video', post_id=video.id) }}"
+      class="btn btn-outline-danger"
+    >
+      ❤️ {{ video.like_count }}
+    </a>
+  </div>
+
+  <hr />
+
+  <h4>Comments</h4>
+
+  {% for comment in video.comments %}
+  <div class="mb-2">
+    <strong>
+      <a href="{{ url_for('views.profile', user_id=comment.user.id) }}">
+        {{ comment.user.username }}
+      </a>
+    </strong>:
+    {{ comment.text }}
+  </div>
+  {% else %}
+  <p class="text-muted">No comments yet.</p>
+  {% endfor %}
+
+  <form
+    action="{{ url_for('views.comment_video', video_id=video.id) }}"
+    method="POST"
+    class="mt-3"
+  >
+    <div class="input-group">
+      <input
+        type="text"
+        name="text"
+        class="form-control"
+        placeholder="Write a comment..."
+      />
+      <button class="btn btn-primary">Comment</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

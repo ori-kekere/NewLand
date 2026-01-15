@@ -603,16 +603,83 @@ def delete_user(user_id):
 def search():
     q = request.args.get("q", "").strip()
 
+    users = []
+    posts = []
+    arts = []
+    videos = []
+
     if not q:
         return render_template(
             "search.html",
             query=q,
-            users=[],
-            posts=[],
-            arts=[],
-            videos=[]
+            users=users,
+            posts=posts,
+            arts=arts,
+            videos=videos
         )
 
+    # -----------------------------
+    # ID-based search (art:123, video:45)
+    # -----------------------------
+    if ":" in q:
+        prefix, value = q.split(":", 1)
+
+        if value.isdigit():
+            obj_id = int(value)
+
+            if prefix == "art":
+                art = Art.query.get(obj_id)
+                if art:
+                    arts = [art]
+
+            elif prefix == "video":
+                video = Video.query.get(obj_id)
+                if video:
+                    videos = [video]
+
+            elif prefix == "post":
+                post = Post.query.get(obj_id)
+                if post:
+                    posts = [post]
+
+            return render_template(
+                "search.html",
+                query=q,
+                users=users,
+                posts=posts,
+                arts=arts,
+                videos=videos
+            )
+
+    # -----------------------------
+    # Pure numeric search (#123)
+    # -----------------------------
+    if q.isdigit():
+        obj_id = int(q)
+
+        art = Art.query.get(obj_id)
+        video = Video.query.get(obj_id)
+        post = Post.query.get(obj_id)
+
+        if art:
+            arts.append(art)
+        if video:
+            videos.append(video)
+        if post:
+            posts.append(post)
+
+        return render_template(
+            "search.html",
+            query=q,
+            users=users,
+            posts=posts,
+            arts=arts,
+            videos=videos
+        )
+
+    # -----------------------------
+    # Normal text search
+    # -----------------------------
     users = User.query.filter(
         User.username.ilike(f"%{q}%")
     ).all()
@@ -622,6 +689,7 @@ def search():
     ).all()
 
     arts = Art.query.filter(Art.title.ilike(f"%{q}%")).all()
+    
     videos = Video.query.filter(Video.title.ilike(f"%{q}%")).all()
 
 
@@ -633,6 +701,7 @@ def search():
         arts=arts,
         videos=videos
     )
+
 
 # =========================
 # NOTIFICATIONS ROUTE 
@@ -655,4 +724,34 @@ def notifications():
     return render_template(
         'notifications.html',
         notifications=notifications
+    )
+
+# =========================
+# ART ID ROUTE 
+# =========================
+
+@views.route("/art/<int:art_id>")
+@login_required
+def view_art(art_id):
+    art = Art.query.get_or_404(art_id)
+
+    return render_template(
+        "art_detail.html",
+        art=art,
+        user=current_user
+    )
+
+# =========================
+# VIDEO ID ROUTE 
+# =========================
+
+@views.route("/video/<int:video_id>")
+@login_required
+def view_video(video_id):
+    video = Video.query.get_or_404(video_id)
+
+    return render_template(
+        "video_detail.html",
+        video=video,
+        user=current_user
     )
