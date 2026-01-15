@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+{% for n in notifications %}
+<br>
+<div class="card mb-2 {% if not n.is_read %}border-primary{% endif %}">
+    
+  <div class="card-body">
+
+    <a href="/profile/{{ n.from_user.id }}">
+      {{ n.from_user.username }}
+    </a>
+
+    {% if n.type == 'follow' %}
+      started following you
+    {% elif n.type == 'like' %}
+      liked your {{ n.object_type }}
+    {% elif n.type == 'comment' %}
+      commented on your {{ n.object_type }}
+    {% endif %}
+
+    <small class="text-muted float-end">
+      {{ n.date_created.strftime('%b %d') }}
+    </small>
+
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

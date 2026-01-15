@@ -58,6 +58,15 @@ class User(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
 
+    notifications = db.relationship(
+    'Notification',
+    foreign_keys='Notification.user_id',
+    backref='user',
+    lazy='dynamic',
+    cascade='all, delete-orphan'
+    )
+
+
     arts = db.relationship(
         'Art',
         backref='user',
@@ -236,3 +245,31 @@ class Like(db.Model):
 
     # NO backref to avoid conflicts
     user = db.relationship('User')
+
+# =========================
+# NOTIFICATION 
+# =========================
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    from_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    type = db.Column(db.String(20), nullable=False)  
+    # 'follow', 'like', 'comment'
+
+    object_id = db.Column(db.Integer, nullable=True)
+    object_type = db.Column(db.String(20), nullable=True)
+    # 'post', 'art', 'video'
+
+    is_read = db.Column(db.Boolean, default=False)
+
+    date_created = db.Column(db.DateTime, default=db.func.now())
+
+    from_user = db.relationship(
+        'User',
+        foreign_keys=[from_user_id],
+        backref='sent_notifications'
+    )
+

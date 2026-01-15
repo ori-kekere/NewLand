@@ -1,6 +1,6 @@
 from flask import Blueprint,render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
-from .models import Post, User, Comment, Like, Art, ArtComment, Video, VideoComment
+from .models import Post, User, Comment, Like, Art, ArtComment, Video, VideoComment, Notification
 from . import db
 from .auth import logout_user
 from werkzeug.utils import secure_filename
@@ -24,6 +24,10 @@ def allowed_video(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
 
+# =========================
+# HOME ROUTE 
+# =========================
+
 @views.route('/')
 @views.route('/home')
 @login_required
@@ -31,6 +35,10 @@ def home():
     posts = Post.query.all()
     posts = Post.query.order_by(Post.date_created.desc()).all()
     return render_template("home.html", user=current_user, posts=posts)
+
+# =========================
+# CREATE POST ROUTE 
+# =========================
 
 @views.route('/create-post', methods=['GET', 'POST'])
 @login_required
@@ -51,6 +59,10 @@ def create_post():
 
     return render_template("create_post.html", user=current_user)
 
+# =========================
+# DELETE POST ROUTE 
+# =========================
+
 @views.route('/delete-post/<id>')
 @login_required
 def delete_post(id):
@@ -67,31 +79,43 @@ def delete_post(id):
         
     return redirect(url_for('views.home'))
 
-
+# =========================
+# CREATE POST COMMENT ROUTE 
+# =========================
 
 @views.route("/create-comment/<post_id>", methods=["POST"])
 @login_required
 def create_comment(post_id):
     text = request.form.get('text')
+    post = Post.query.get_or_404(post_id)
 
     if not text:
         flash('Comment cannot be empty!', category='error')
-    else:
-        post = Post.query.get(post_id)
-        
-        if post:
-            comment = Comment(
-                text=text,
-                user_id=current_user.id,
-                post_id=post.id
-            )
-            db.session.add(comment)
-            db.session.commit()
+        return redirect(request.referrer)
 
-        else:
-            flash('Post does not exists!', category='error')
+    comment = Comment(
+        text=text,
+        user_id=current_user.id,
+        post_id=post.id
+    )
+    db.session.add(comment)
 
-    return redirect(url_for('views.home'))
+    if post.user_id != current_user.id:
+        notification = Notification(
+            user_id=post.user_id,
+            from_user_id=current_user.id,
+            type='comment',
+            object_id=post.id,
+            object_type='post'
+        )
+        db.session.add(notification)
+
+    db.session.commit()
+    return redirect(request.referrer)
+
+# =========================
+# DELETE POST COMMENT ROUTE 
+# =========================
 
 @views.route("/delete-comment/<comment_id>")
 @login_required
@@ -117,46 +141,81 @@ def delete_comment(comment_id):
 
     return redirect(url_for('views.home'))
 
+# =========================
+# LIKE POST ROUTE 
+# =========================
+
 @views.route('/like/<post_type>/<int:post_id>')
 @login_required
 def like_post(post_type, post_id):
 
     if post_type == 'post':
         item = Post.query.get_or_404(post_id)
+        owner_id = item.user_id
     elif post_type == 'art':
         item = Art.query.get_or_404(post_id)
+        owner_id = item.user_id
     elif post_type == 'video':
         item = Video.query.get_or_404(post_id)
+        owner_id = item.user_id
     else:
         abort(400)
 
-    like = Like.query.filter_by(
+    existing_like = Like.query.filter_by(
         user_id=current_user.id,
         post_id=post_id,
         post_type=post_type
     ).first()
 
-    if like:
-        db.session.delete(like)
+    if existing_like:
+        db.session.delete(existing_like)
     else:
         db.session.add(
             Like(user_id=current_user.id, post_id=post_id, post_type=post_type)
         )
+
+        if owner_id != current_user.id:
+            notification = Notification(
+                user_id=owner_id,
+                from_user_id=current_user.id,
+                type='like',
+                object_id=post_id,
+                object_type=post_type
+            )
+            db.session.add(notification)
 
     db.session.commit()
     return redirect(request.referrer)
 
 
 
+# =========================
+# FOLLOW ROUTE 
+# =========================
 
 @views.route('/follow/<int:user_id>')
 @login_required
 def follow(user_id):
     user = User.query.get_or_404(user_id)
+
     if not current_user.is_following(user):
         current_user.follow(user)
+
+        if user.id != current_user.id:
+            notification = Notification(
+                user_id=user.id,
+                from_user_id=current_user.id,
+                type='follow'
+            )
+            db.session.add(notification)
+
         db.session.commit()
+
     return redirect(url_for('views.profile', user_id=user.id))
+
+# =========================
+# UNFOLLOW ROUTE 
+# =========================
 
 @views.route('/unfollow/<int:user_id>')
 @login_required
@@ -167,6 +226,9 @@ def unfollow(user_id):
         db.session.commit()
     return redirect(url_for('views.profile', user_id=user.id))
 
+# =========================
+# PROFILES ROUTE 
+# =========================
 
 @views.route("/profile/<int:user_id>")
 def profile(user_id):
@@ -182,7 +244,9 @@ def profile(user_id):
     return render_template("profile.html", user=user, posts=posts, arts=arts, videos=videos)
 
 
-
+# =========================
+# USERS ROUTE 
+# =========================
 
 @views.route('/users')
 @login_required
@@ -190,6 +254,9 @@ def list_users():
     users = User.query.all()
     return render_template("user_list.html", users=users, user=current_user)
 
+# =========================
+# FOLLOWERS ROUTE 
+# =========================
 
 @views.route("/followers/<int:user_id>")
 @login_required
@@ -198,6 +265,9 @@ def followers(user_id):
     followers = user.followers.all()  # returns list of Follow objects
     return render_template("followers.html", user=user, followers=followers)
 
+# =========================
+# FOLLOWING ROUTE 
+# =========================
 
 @views.route("/following/<int:user_id>")
 @login_required
@@ -206,6 +276,9 @@ def following(user_id):
     following = user.followed.all()  # returns list of Follow objects
     return render_template("following.html", user=user, following=following)
 
+# =========================
+# EDIT PROFILE ROUTE 
+# =========================
 
 @views.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
@@ -247,26 +320,48 @@ def edit_profile():
 
     return render_template("edit_profile.html", user=current_user)
 
+# =========================
+# NOT NEEDED ROUTE 
+# =========================
 
 @views.route('/art', methods=['GET', 'POST'])
 @login_required
 def art():
     return redirect(url_for('views.media'))
 
-
+# =========================
+# COMMENT ON ART ROUTE 
+# =========================
 
 @views.route("/comment-art/<int:art_id>", methods=["POST"])
 @login_required
 def comment_art(art_id):
     text = request.form.get("text")
+    art = Art.query.get_or_404(art_id)
+
     if not text.strip():
         flash("Comment cannot be empty.", category="error")
-        return redirect(url_for("views.art"))
+        return redirect(request.referrer)
 
-    comment = ArtComment(text=text, user_id=current_user.id, art_id=art_id)
+    comment = ArtComment(text=text, user_id=current_user.id, art_id=art.id)
     db.session.add(comment)
+
+    if art.user_id != current_user.id:
+        notification = Notification(
+            user_id=art.user_id,
+            from_user_id=current_user.id,
+            type='comment',
+            object_id=art.id,
+            object_type='art'
+        )
+        db.session.add(notification)
+
     db.session.commit()
-    return redirect(url_for("views.art"))
+    return redirect(request.referrer)
+
+# =========================
+# DELETE ART COMMENT ROUTE 
+# =========================
 
 @views.route("/delete-art-comment/<int:comment_id>")
 @login_required
@@ -283,11 +378,18 @@ def delete_art_comment(comment_id):
     flash("Comment deleted.", category="success")
     return redirect(url_for("views.art"))
 
+# =========================
+# NOT NEEDED ROUTE 
+# =========================
+
 @views.route('/videos', methods=['GET', 'POST'])
 @login_required
 def videos():
     return redirect(url_for('views.media'))
 
+# =========================
+# UPLOAD MEDIA ROUTE 
+# =========================
 
 @views.route('/media', methods=['GET', 'POST'])
 @login_required
@@ -355,6 +457,10 @@ def media():
         videos=videos
     )
 
+# =========================
+# COMMENT VIDEO ROUTE 
+# =========================
+
 @views.route('/comment-video/<int:video_id>', methods=['POST'])
 @login_required
 def comment_video(video_id):
@@ -363,16 +469,31 @@ def comment_video(video_id):
 
     if not text:
         flash('Comment cannot be empty.', category='error')
-    else:
-        comment = VideoComment(
-            text=text,
-            user_id=current_user.id,
-            video_id=video.id
-        )
-        db.session.add(comment)
-        db.session.commit()
+        return redirect(request.referrer)
 
+    comment = VideoComment(
+        text=text,
+        user_id=current_user.id,
+        video_id=video.id
+    )
+    db.session.add(comment)
+
+    if video.user_id != current_user.id:
+        notification = Notification(
+            user_id=video.user_id,
+            from_user_id=current_user.id,
+            type='comment',
+            object_id=video.id,
+            object_type='video'
+        )
+        db.session.add(notification)
+
+    db.session.commit()
     return redirect(request.referrer)
+
+# =========================
+# DELETE VIDEO COMMENT ROUTE 
+# =========================
 
 @views.route('/delete-video-comment/<int:comment_id>')
 @login_required
@@ -387,6 +508,10 @@ def delete_video_comment(comment_id):
     flash('Comment deleted.', category='success')
 
     return redirect(request.referrer)
+
+# =========================
+# LIKE FOR ART AND VIDEO  
+# =========================
 
 @views.route('/like/<string:post_type>/<int:post_id>')
 @login_required
@@ -414,6 +539,9 @@ def like_media(post_type, post_id):
 
     return redirect(request.referrer)
 
+# =========================
+# DELETE ARTWORK ROUTE 
+# =========================
 
 @views.route('/delete-art/<id>')
 @login_required
@@ -431,6 +559,9 @@ def delete_art(id):
         
     return redirect(url_for('views.media'))
 
+# =========================
+# DELETE VIDEO ROUTE 
+# =========================
 
 @views.route('/delete-video/<id>')
 @login_required
@@ -448,6 +579,9 @@ def delete_video(id):
         
     return redirect(url_for('views.media'))
 
+# =========================
+# DELETE USER ROUTE 
+# =========================
 
 @views.route('/delete-user/<int:user_id>')
 @login_required
@@ -460,7 +594,9 @@ def delete_user(user_id):
     logout_user()
     return redirect(url_for('auth.login'))
 
-
+# =========================
+# SEARCH ROUTE 
+# =========================
 
 @views.route("/search")
 @login_required
@@ -496,4 +632,27 @@ def search():
         posts=posts,
         arts=arts,
         videos=videos
+    )
+
+# =========================
+# NOTIFICATIONS ROUTE 
+# =========================
+
+@views.route('/notifications')
+@login_required
+def notifications():
+    notifications = Notification.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Notification.date_created.desc()).all()
+
+    Notification.query.filter_by(
+        user_id=current_user.id,
+        is_read=False
+    ).update({Notification.is_read: True})
+
+    db.session.commit()
+
+    return render_template(
+        'notifications.html',
+        notifications=notifications
     )
