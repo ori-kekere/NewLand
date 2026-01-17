@@ -96,22 +96,17 @@
             </a>
           </center>
 
-          {% if user.id == post.user_id %}
-          <div class="btn-group">
-            <button
-              class="btn btn-primary dropdown-toggle"
-              data-bs-toggle="dropdown"
-            ></button>
-            <ul class="dropdown-menu">
-              <li>
-                <a href="/delete-post/{{ post.id }}" class="dropdown-item"
-                  >Delete</a
-                >
-              </li>
-            </ul>
-          </div>
-          {% endif %}
+      {% if current_user.id == post.user_id %}
+        <div class="btn-group">
+          <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/delete-post/{{ post.id }}" class="dropdown-item">Delete</a>
+            </li>
+          </ul>
         </div>
+      {% endif %}
+    </div>
 
         <div class="card-body">
           <p class="card-text">{{ post.text }}</p>

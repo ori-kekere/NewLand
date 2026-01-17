@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -13,69 +13,107 @@
     <script
      src="https://kit.fontawesome.com/780a2cab32.js" crossorigin="anonymous">
     </script>
-    </style>
     <title>NewLands - {% block title %}{% endblock %}</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collaspe"
-          data-bs-target="#navbar"
-        ><span class="navbar-toggler-icon"></span></button>
-        <div class="collaspe navbar-collaspe" id="navbar">
-            <div class="navbar-nav">
 
-              <a href="/home"><img src="{{ url_for('static', filename='newlands.png') }}" alt="NewLands" style="width:125px;height:50px;"></a>
+        <!-- Logo -->
+        <a class="navbar-brand" href="/home">
+          <img src="{{ url_for('static', filename='newlands.png') }}"
+              alt="NewLands"
+              style="width:125px;height:50px;">
+        </a>
 
+        <!-- Hamburger -->
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbar"
+                aria-controls="navbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-                {% if current_user.is_authenticated %}
-                  <a class="nav-item nav-link" href="/users">People</a>
-                  <a class="nav-item nav-link" href="/media">The Media</a>
-                  <a href="{{ url_for('views.notifications') }}" class="nav-link">
-                    🔔
-                    {% if current_user.notifications.filter_by(is_read=False).count() > 0 %}
-                    <span class="badge bg-danger">
-                      {{ current_user.notifications.filter_by(is_read=False).count() }}
-                    </span>
-                    {% endif %}
-                  </a>
-                  <a class="nav-item nav-link" href="/logout">Logout</a>
-                  <form action="{{ url_for('views.search') }}" method="GET" class="c-flex">
-                    <input
-                      class="form-control me-2"
-                      type="search"
-                      name="q"
-                      placeholder="Search users, posts, art, videos"
-                      required
-                    >
-                    <button class="btn btn-outline-primary">Search</button>
-                  </form>
+        <!-- Collapsible content -->
+        <div class="collapse navbar-collapse" id="navbar">
 
-                  
+          <!-- Left links -->
+          <div class="navbar-nav me-auto">
+            <a class="nav-link" href="/users">People</a>
+            <a class="nav-link" href="/media">The Media</a>
+          </div>
 
-                  {% if current_user.profile_image %}
-                  <div style="padding-left: 1300px;">
-                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}" height="50" width="50"></a>
-                  </div>
-                  {% else %}
-                  <div style="padding-left: 1300px;">
-                    <a href="/profile/{{current_user.id}}"><img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}" height="50" width="50"></a>
-                  </div>
-                  {% endif %}
+          {% if current_user.is_authenticated %}
 
-                  
+          <!-- Search (desktop) -->
+          <form action="{{ url_for('views.search') }}"
+                method="GET"
+                class="d-none d-lg-flex me-3">
+            <input class="form-control form-control-sm me-2"
+                  type="search"
+                  name="q"
+                  placeholder="Search"
+                  required>
+            <button class="btn btn-sm btn-outline-primary">Search</button>
+          </form>
 
-                {% else %}
-                  <a class="nav-item nav-link" href="/login">Login</a>
-                  <a class="nav-item nav-link" href="/signup">Sign Up</a>
-                {% endif %}
-            </div>
+          <!-- Right items -->
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+
+            <a href="{{ url_for('views.notifications') }}" class="nav-link">
+              🔔
+              {% if current_user.notifications.filter_by(is_read=False).count() > 0 %}
+              <span class="badge bg-danger">
+                {{ current_user.notifications.filter_by(is_read=False).count() }}
+              </span>
+              {% endif %}
+            </a>
+
+            <a class="nav-link" href="/logout">Logout</a>
+
+            <a href="/profile/{{ current_user.id }}">
+              {% if current_user.profile_image %}
+                <img
+                  src="{{ url_for('static', filename='uploads/' + current_user.profile_image) }}"
+                  class="rounded-circle"
+                  style="width:32px;height:32px;object-fit:cover;">
+              {% else %}
+                <img
+                  src="{{ url_for('static', filename='uploads/default.png') }}"
+                  class="rounded-circle"
+                  style="width:32px;height:32px;object-fit:cover;">
+              {% endif %}
+            </a>
+            <!-- Logout -->
+            <a class="nav-link text-danger" href="/logout">Logout</a>
+          </div>
+
+          <!-- Search (mobile) -->
+          <form action="{{ url_for('views.search') }}"
+                method="GET"
+                class="d-lg-none mt-3">
+            <input class="form-control form-control-sm mb-2"
+                  type="search"
+                  name="q"
+                  placeholder="Search users, posts, art, videos"
+                  required>
+            <button class="btn btn-outline-primary w-100 btn-sm">Search</button>
+          </form>
+
+          {% else %}
+
+          <div class="navbar-nav">
+            <a class="nav-link" href="/login">Login</a>
+            <a class="nav-link" href="/signup">Sign Up</a>
+          </div>
+
+          {% endif %}
         </div>
       </div>
     </nav>
+
     {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
             {% for category, message in messages %}
