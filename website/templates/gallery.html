@@ -11,7 +11,7 @@ content %}
       class="card"
       style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
     >
-      <h3 class="mt-2 fw-bold">{{ piece.title }}</h3>
+      <h3 class="mt-2 fw-bold" align="center">{{ piece.title }}</h3>
       <a
         href="{{ url_for('static', filename='art/' + piece.art) }}"
         target="_blank"
@@ -108,7 +108,7 @@ content %}
       class="card"
       style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
     >
-      <h2 class="mt-2 fw-bold">{{ video.title }}</h2>
+      <h2 class="mt-2 fw-bold" align="center">{{ video.title }}</h2>
 
       <video class="card-img-top" controls>
         <source
