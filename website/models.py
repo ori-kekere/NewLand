@@ -183,6 +183,7 @@ class Video(db.Model):
     title = db.Column(db.String(150), index=True)
     video = db.Column(db.String(150), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    views = db.Column(db.Integer, default=0)
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('user.id', ondelete='CASCADE'),

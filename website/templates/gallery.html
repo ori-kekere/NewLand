@@ -2,7 +2,16 @@
 content %}
 
 <h2 align="center">Media</h2>
-
+<script>
+  function video_click(video_id) {
+    console.log("video clicked: " + video_id);
+    /** This next line will probably not work. You need to figure out
+     * how to make an api call to the backend to increment the view count
+     using JQuery
+     */
+    api_call("/video_api/increment_views/" + video_id);
+  }
+</script>
 <div class="row">
   <!-- ART CARDS -->
   {% for piece in arts %}
@@ -111,7 +120,7 @@ content %}
       <h2 class="mt-2 fw-bold" align="center">{{ video.title }}</h2>
 
       <video class="card-img-top" controls>
-        <source
+        <source onclick="video_click({{ video.id }});"
           src="{{ url_for('static', filename='videos/' + video.video) }}"
           type="video/mp4"
         />
@@ -131,6 +140,9 @@ content %}
         >
           ❤️ {{ video.like_count }}
         </a>
+        <div>
+          <p>{{ video.view_count }} views</p>
+        </div>
 
         {% if user.id == video.user_id %}
         <div class="btn-group right">
