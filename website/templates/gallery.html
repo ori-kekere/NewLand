@@ -120,7 +120,7 @@ content %}
       <h2 class="mt-2 fw-bold" align="center">{{ video.title }}</h2>
 
       <video class="card-img-top" controls>
-        <source onclick="video_click({{ video.id }});"
+        <source onclick="video_click({ video_id });"
           src="{{ url_for('static', filename='videos/' + video.video) }}"
           type="video/mp4"
         />
@@ -141,7 +141,7 @@ content %}
           ❤️ {{ video.like_count }}
         </a>
         <div>
-          <p>{{ video.view_count }} views</p>
+          <p>There are {{ video.view_count }} views on this video. </p>
         </div>
 
         {% if user.id == video.user_id %}
