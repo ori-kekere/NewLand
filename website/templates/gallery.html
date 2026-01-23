@@ -9,7 +9,10 @@ content %}
      * how to make an api call to the backend to increment the view count
      using JQuery
      */
-    api_call("/video_api/increment_views/" + video_id);
+    // api_call("/video_api/increment_views/" + video_id);
+    $.get("/video_api/increment_views/" + video_id,function(data){
+      alert("Views incremented");
+  });
   }
 </script>
 <div class="row">
@@ -141,7 +144,11 @@ content %}
           ❤️ {{ video.like_count }}
         </a>
         <div>
+<<<<<<< Updated upstream
           <p>{{ video.view_count }} views</p>
+=======
+          <p>There are {{ video.views }} views on this video. </p>
+>>>>>>> Stashed changes
         </div>
 
         {% if user.id == video.user_id %}
