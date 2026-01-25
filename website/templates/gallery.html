@@ -2,6 +2,7 @@
 content %}
 
 <h2 align="center">Media</h2>
+
 <script>
   function video_click(video_id) {
     console.log("video clicked: " + video_id);
@@ -9,7 +10,10 @@ content %}
      * how to make an api call to the backend to increment the view count
      using JQuery
      */
-    api_call("/video_api/increment_views/" + video_id);
+    // api_call("/video_api/increment_views/" + video_id);
+    $.get("/video_api/increment_views/" + video_id, function (data) {
+      alert("Views incremented");
+    });
   }
 </script>
 <div class="row">
@@ -120,7 +124,8 @@ content %}
       <h2 class="mt-2 fw-bold" align="center">{{ video.title }}</h2>
 
       <video class="card-img-top" controls>
-        <source onclick="video_click({ video_id });"
+        <source
+          onclick="video_click({ video_id })"
           src="{{ url_for('static', filename='videos/' + video.video) }}"
           type="video/mp4"
         />
@@ -141,7 +146,7 @@ content %}
           ❤️ {{ video.like_count }}
         </a>
         <div>
-          <p>There are {{ video.view_count }} views on this video. </p>
+          <p>There are {{ video.views }} views on this video.</p>
         </div>
 
         {% if user.id == video.user_id %}
