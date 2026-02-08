@@ -1,0 +1,6 @@
+1. Create a new field user model 'account verified' the default should be set to 'false'
+2. When the user logs in check if 'account verified' = true, if that is true the user should be able to log in; if 'account verified' = false tell the user that they need to verify their account by clicking the link
+3. Create a new table called 'verify links' there should be coloums 'Link Email' and 'Expiration date'
+4. User email put in verify links set expiration date to today plus seven days
+5. Create an email link when the user has registered; create a page called 'Activate Account'; what the email link will look like '/activate-account?email=username@arid=user-id'
+6. In function in _____ accept parameter which will be email and id
