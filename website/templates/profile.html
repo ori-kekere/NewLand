@@ -263,14 +263,14 @@
           </p>
           {% if comment.user_id == current_user.id or piece.user_id ==
           current_user.id %}
-          <br />
+          
           <a
             href="/delete-art-comment/{{ comment.id }}"
             class="btn btn-danger btn-sm"
           >
             Delete
           </a>
-
+          <hr/>
           {% endif %} {% endfor %}
         </div>
         {% endif %}

@@ -33,6 +33,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(125), unique=True)
     username = db.Column(db.String(60), unique=True, index=True)
     password = db.Column(db.String(100))
+    account_verified = db.Column(db.Integer, default=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     bio = db.Column(db.Text, default="")
     profile_pic = db.Column(db.String(300), default="default.png")

@@ -6,241 +6,152 @@ content %}
 <script>
   function video_click(video_id) {
     console.log("video clicked: " + video_id);
-    
+
     $.get("/video_api/increment_views/" + video_id, function (data) {
-      $('#views').text(data['views'])
+      $("#views").text(data["views"]);
     });
   }
 </script>
 
 <div class="row">
-  <!-- ART CARDS -->
   {% for piece in arts %}
   <div class="col-md-4 my-3">
-    <div
-      class="card"
-      style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
-    >
-      <h3 class="mt-2 fw-bold" align="center">{{ piece.title }}</h3>
-      <a
-        href="{{ url_for('static', filename='art/' + piece.art) }}"
-        target="_blank"
-      >
-        <img
-          src="{{ url_for('static', filename='art/' + piece.art) }}"
-          class="card-img-top art-image"
-          alt="Art"
-        />
+    <div class="card" style="background-color: rgba(81,81,188,0.79); width:90%">
+      <h3 class="mt-2 fw-bold text-center">{{ piece.title }}</h3>
+
+      <a href="{{ url_for('static', filename='art/' + piece.art) }}" target="_blank">
+        <img src="{{ url_for('static', filename='art/' + piece.art) }}"
+             class="card-img-top art-image">
       </a>
 
       <div class="card-body">
         <p class="card-text">
-          Posted by
-          <a href="/profile/{{ piece.user.id }}"> {{ piece.user.username }} </a
-          ><br />
+          Posted by <a href="/profile/{{ piece.user.id }}">{{ piece.user.username }}</a><br>
           on {{ piece.date_created.strftime('%B %d, %Y') }}
         </p>
 
-        <a
-          href="{{ url_for('views.like_post', post_type='art', post_id=piece.id) }}"
-          class="btn btn-sm btn-outline-danger"
-        >
+        <a href="{{ url_for('views.like_post', post_type='art', post_id=piece.id) }}"
+           class="btn btn-sm btn-outline-danger">
           ❤️ {{ piece.likes|length }}
         </a>
 
-        {% if user.id == piece.user_id %}
-        <div class="btn-group right">
-          <button
-            class="btn btn-primary dropdown-toggle"
-            data-bs-toggle="dropdown"
-          ></button>
-          <ul class="dropdown-menu">
-            <li>
-              <a href="/delete-art/{{ piece.id }}" class="dropdown-item"
-                >Delete</a
-              >
-            </li>
-          </ul>
-        </div>
+        {% if current_user.id == piece.user_id %}
+        <a href="/delete-art/{{ piece.id }}" class="btn btn-sm btn-danger float-end">
+          Delete
+        </a>
         {% endif %}
 
-        <!-- COMMENTS -->
-        {% if piece.comments %}
-        <div class="card mt-2">
-          <div class="card-body">
-            {% for comment in piece.comments %}
-            <div>
-              <a href="/profile/{{ comment.user.id }}"
-                >{{ comment.user.username }}</a
-              >: {{ comment.text }} {% if comment.user_id == current_user.id or
-              piece.user_id == current_user.id %}
-              <br />
-              <a
-                href="/delete-art-comment/{{ comment.id }}"
-                class="btn btn-danger btn-sm"
-              >
-                Delete
-              </a>
+        <!-- COMMENTS TOGGLE -->
+        <p class="mt-2">
+          {% if piece.comments|length > 0 %}
+          <a data-bs-toggle="collapse" href="#art-comments-{{ piece.id }}">
+            <small>View {{ piece.comments|length }} comments</small>
+          </a>
+          {% else %}
+          <small class="text-muted">No comments yet</small>
+          {% endif %}
+        </p>
+
+        <!-- COLLAPSE -->
+        <div class="collapse" id="art-comments-{{ piece.id }}">
+          {% for comment in piece.comments %}
+          <div>
+            <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>:
+            {{ comment.text }}
+          </div>
+          <hr>
+          {% endfor %}
+
+          <form action="{{ url_for('views.comment_art', art_id=piece.id) }}" method="POST">
+            <div class="input-group">
+              <input type="text" name="text" class="form-control" placeholder="Write a comment">
+              <button class="btn btn-primary">Comment</button>
             </div>
-            {% endif %}
-            <hr />
-            {% endfor %}
-          </div>
+          </form>
         </div>
-        {% else %}
-        <p class="text-muted">No comments yet.</p>
-        {% endif %}
 
-        <form
-          action="{{ url_for('views.comment_art', art_id=piece.id) }}"
-          method="POST"
-          class="mt-2"
-        >
-          <div class="input-group">
-            <input
-              type="text"
-              name="text"
-              class="form-control"
-              placeholder="Write a comment..."
-            />
-            <button class="btn btn-primary">Comment</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
   {% endfor %}
+</div>
 
-  <!-- VIDEOS -->
+
+<div class="row">
   {% for video in videos %}
   <div class="col-md-4 my-3">
-    <div
-      class="card"
-      style="background-color: rgba(81, 81, 188, 0.79); width: 90%"
-    >
-      <h2 class="mt-2 fw-bold" align="center">{{ video.title }}</h2>
-      <a href="#" onclick="video_click({{ video.id }})">
-        <video class="card-img-top" controls>
-          
-          <source
-            src="{{ url_for('static', filename='videos/' + video.video) }}"
-            type="video/mp4"
-          />
-        
-        </video>
-      </a>
-      
+    <div class="card" style="background-color: rgba(81,81,188,0.79); width:90%">
+      <h3 class="mt-2 fw-bold text-center">{{ video.title }}</h3>
+
+      <video class="card-img-top" controls>
+        <source src="{{ url_for('static', filename='videos/' + video.video) }}">
+      </video>
 
       <div class="card-body">
         <p class="card-text">
-          Posted by
-          <a href="/profile/{{ video.user.id }}"> {{ video.user.username }} </a
-          ><br />
+          Posted by <a href="/profile/{{ video.user.id }}">{{ video.user.username }}</a><br>
           on {{ video.date_created.strftime('%B %d, %Y') }}
         </p>
 
-        <a
-          href="{{ url_for('views.like_post', post_type='video', post_id=video.id) }}"
-          class="btn btn-outline-light btn-sm"
-        >
-          ❤️ {{ video.like_count }}
+        <a href="{{ url_for('views.like_post', post_type='video', post_id=video.id) }}"
+           class="btn btn-sm btn-outline-danger">
+          ❤️ {{ video.likes|length }}
         </a>
-        <div>
-          <p>There are <span id="views">{{ video.views }}</span> views on this video.</p>
-        </div>
 
-        {% if user.id == video.user_id %}
-        <div class="btn-group right">
-          <button
-            class="btn btn-primary dropdown-toggle"
-            data-bs-toggle="dropdown"
-          ></button>
-          <ul class="dropdown-menu">
-            <li>
-              <a href="/delete-video/{{ video.id }}" class="dropdown-item"
-                >Delete</a
-              >
-            </li>
-          </ul>
-        </div>
+        {% if current_user.id == video.user_id %}
+        <a href="/delete-video/{{ video.id }}" class="btn btn-sm btn-danger float-end">
+          Delete
+        </a>
         {% endif %}
 
-        <!-- COMMENTS -->
-        {% if video.comments %}
-        <div class="card mt-2">
-          <div class="card-body">
-            {% for comment in video.comments %}
-            <div>
-              <a href="/profile/{{ comment.user.id }}"
-                >{{ comment.user.username }}</a
-              >: {{ comment.text }} {% if comment.user_id == current_user.id or
-              video.user_id == current_user.id %}
-              <br />
-              <a
-                href="/delete-video-comment/{{ comment.id }}"
-                class="btn btn-danger btn-sm"
-              >
-                Delete
-              </a>
+        <p class="mt-2">
+          {% if video.comments|length > 0 %}
+          <a data-bs-toggle="collapse" href="#video-comments-{{ video.id }}">
+            <small>View {{ video.comments|length }} comments</small>
+          </a>
+          {% else %}
+          <small class="text-muted">No comments yet</small>
+          {% endif %}
+        </p>
+
+        <div class="collapse" id="video-comments-{{ video.id }}">
+          {% for comment in video.comments %}
+          <hr>
+          <div>
+            <a href="/profile/{{ comment.user.id }}">{{ comment.user.username }}</a>:
+            {{ comment.text }}
+          </div>
+         
+          {% if current_user.id == comment.user_id or current_user.id == video.user_id %}
+          <a href="/delete-video-comment/{{ comment.id }}" class="btn btn-danger btn-sm">Delete</a>
+          {% endif %}
+          {% endfor %}
+           <hr>
+
+          <form action="{{ url_for('views.comment_video', video_id=video.id) }}" method="POST">
+            <div class="input-group">
+              <input type="text" name="text" class="form-control" placeholder="Write a comment">
+              <button class="btn btn-primary">Comment</button>
             </div>
-            {% endif %}
-            <hr />
-            {% endfor %}
-          </div>
+          </form>
         </div>
-        {% else %}
-        <p class="text-muted">No comments yet.</p>
-        {% endif %}
 
-        <!-- COMMENT FORM -->
-        <form
-          action="{{ url_for('views.comment_video', video_id=video.id) }}"
-          method="POST"
-          class="mt-2"
-        >
-          <div class="input-group">
-            <input
-              type="text"
-              name="text"
-              class="form-control"
-              placeholder="Write a comment..."
-            />
-            <button class="btn btn-primary">Comment</button>
-          </div>
-        </form>
       </div>
     </div>
   </div>
   {% endfor %}
-
-  <hr />
-
-  <!-- UPLOAD SECTION -->
-  <h3 align="center">Upload Media</h3>
-
-  <form method="POST" enctype="multipart/form-data">
-    <div class="form-group text-center">
-      <input
-        type="text"
-        name="title"
-        class="form-control mb-2"
-        placeholder="Title"
-        required
-      />
-
-      <input type="file" name="file" required />
-
-      <br /><br />
-
-      <button name="type" value="art" class="btn btn-primary mx-2">
-        Upload Art
-      </button>
-
-      <button name="type" value="video" class="btn btn-primary mx-2">
-        Upload Video
-      </button>
-    </div>
-  </form>
-
-  {% endblock %}
 </div>
+
+<hr />
+
+<h3 class="text-center mt-4">Upload Media</h3>
+
+<form method="POST" enctype="multipart/form-data" class="text-center">
+  <input type="text" name="title" class="form-control mb-2" placeholder="Title" required>
+  <input type="file" name="file" required><br><br>
+
+  <button name="type" value="art" class="btn btn-primary mx-2">Upload Art</button>
+  <button name="type" value="video" class="btn btn-primary mx-2">Upload Video</button>
+</form>
+
+{% endblock %}
