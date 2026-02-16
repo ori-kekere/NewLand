@@ -1,6 +1,15 @@
-1. Create a new field user model 'account verified' the default should be set to 'false'
-2. When the user logs in check if 'account verified' = true, if that is true the user should be able to log in; if 'account verified' = false tell the user that they need to verify their account by clicking the link
-3. Create a new table called 'verify links' there should be coloums 'Link Email' and 'Expiration date'
-4. User email put in verify links set expiration date to today plus seven days
-5. Create an email link when the user has registered; create a page called 'Activate Account'; what the email link will look like '/activate-account?email=username@arid=user-id'
-6. In function in _____ accept parameter which will be email and id
+1. Create a new field user model 'is_verified' the default should be set to 'false'
+2. When the user logs in check if 'is_verified' = true, if that is true the user should be able to log in; if 'is_verified' = false tell the user that they need to verify their account by clicking the link sent to their registered email address
+3. Create a new table called 'verification_links' there should be coloums 'user_email', 'expiration_date', 'user_id', 'is_used' and 'verification_url'
+4. Create a function in the user model that will create a new verification link and save it to the database when a user registers
+4. a: set expiration_date to 2 days from the current date
+4. b: set is_used to false
+5. Create a page called 'activate-account' that accepts parameters 'email' and 'id'
+5. a: When a user navigates to the 'activate-account' page check if the 'is_used' is true, if it is true then tell the user that their account has already been verified
+5. b: If 'is_used' is false then check if the 'expiration_date' is past, if it is past then tell the user that their account has expired
+5. c: If 'is_used' is false and the 'expiration_date' is not past then update the 'is_used'. 
+5. d: Then update the 'is_verified' to true in the user model
+
+Note: 
+You should do each item one after the other, don't try to do everything at once.
+Reach out to me if you have any questions or if you need help with anything.
