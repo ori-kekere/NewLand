@@ -19,7 +19,7 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if user:
-            if is_verified == True:
+            if user.is_verified == True:
                 if check_password_hash(user.password, password):
                     flash('Logged in! Welcome back!', category='success')
                     login_user(user, remember=True)
@@ -80,8 +80,8 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
-            flash('Account has been made! Welcome to New Lands!')
-            return redirect(url_for('views.home'))
+            flash('Account has been made! Please verify your email address to log in!')
+            return redirect(url_for('auth.login'))
 
     return render_template("signup.html", user=current_user)
 
