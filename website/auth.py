@@ -19,7 +19,7 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if user:
-            if is_verified = True 
+            if is_verified == True:
                 if check_password_hash(user.password, password):
                     flash('Logged in! Welcome back!', category='success')
                     login_user(user, remember=True)
