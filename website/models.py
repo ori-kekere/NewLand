@@ -14,6 +14,15 @@ followers = db.Table(
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+verification_links = db.Table(
+    'verification_links',
+    db.Column('user_id', db.Integer),
+    db.Column('user_email', db.Integer),
+    db.Column('expiration_date', db.Integer),
+    db.Column('is_used', db.Integer),
+    db.Column('verification_url', db.Integer)
+)
+
 
 class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)

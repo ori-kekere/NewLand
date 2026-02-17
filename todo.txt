@@ -1,6 +1,6 @@
 1. Create a new field user model 'is_verified' the default should be set to 'false'
 2. When the user logs in check if 'is_verified' = true, if that is true the user should be able to log in; if 'is_verified' = false tell the user that they need to verify their account by clicking the link sent to their registered email address
-3. Create a new table called 'verification_links' there should be coloums 'user_email', 'expiration_date', 'user_id', 'is_used' and 'verification_url'
+3. Create a new table called 'verification_links' there should be coloums 'user_email', 'expiration_date', 'user_id', 'is_used' and 'is_used'
 4. Create a function in the user model that will create a new verification link and save it to the database when a user registers
 4. a: set expiration_date to 2 days from the current date
 4. b: set is_used to false

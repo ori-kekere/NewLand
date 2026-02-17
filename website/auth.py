@@ -19,14 +19,19 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if user:
-            if check_password_hash(user.password, password):
-                flash('Logged in! Welcome back!', category='success')
-                login_user(user, remember=True)
-                return redirect(url_for('views.home'))
+            if is_verified = True 
+                if check_password_hash(user.password, password):
+                    flash('Logged in! Welcome back!', category='success')
+                    login_user(user, remember=True)
+                    return redirect(url_for('views.home'))
+                else:
+                    flash('Password is incorrect.', category='error')
             else:
-                flash('Password is incorrect.', category='error')
+                flash(' You need to verify yout account by clicking the link in sent to your email address', category='error')
         else:
             flash('Email does not exists.', category='error')
+        
+        
 
     return render_template("login.html", user=current_user)
 
