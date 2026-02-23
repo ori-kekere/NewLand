@@ -755,3 +755,11 @@ def view_video(video_id):
         video=video,
         user=current_user
     )
+
+# =========================
+# RULES 
+# =========================
+
+@views.route('/rules')
+def rules():
+    return render_template("rules.html")

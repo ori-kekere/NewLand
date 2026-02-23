@@ -1,15 +1,17 @@
 from flask import Blueprint,render_template, redirect, url_for, request, flash
 from . import db
-from .models import User
+from .models import User, VerificationLinks
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta
 import os
 import uuid
 
 
-auth = Blueprint("auth", __name__)
 
+auth = Blueprint("auth", __name__)
+now = datetime.now()
 
 @auth.route('/login', methods=['GET','POST'])
 def login():
@@ -27,7 +29,7 @@ def login():
                 else:
                     flash('Password is incorrect.', category='error')
             else:
-                flash(' You need to verify yout account by clicking the link in sent to your email address', category='error')
+                flash(' You need to verify your account by clicking the link in sent to your email address', category='error')
         else:
             flash('Email does not exists.', category='error')
         
@@ -76,6 +78,12 @@ def signup():
                 username=username,
                 password=generate_password_hash(password1, method='pbkdf2:sha256'),
                 profile_image=filename
+            )
+            verification_links = VerificationLinks(
+                user_id = new_user.id,
+                user_email=username,
+                is_used=False,
+                expiration_date = datetime.now() + timedelta(hours=2)
             )
             db.session.add(new_user)
             db.session.commit()
